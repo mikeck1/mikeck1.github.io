@@ -1,0 +1,729 @@
+/* Core Styles */
+html, body {
+    min-height: 100vh;
+}
+
+body {
+    font-family: "Roboto", sans-serif;
+    display: flex;
+    justify-content: center;
+    align-items: flex-start; /* Changed from center to flex-start */
+    margin: 0;
+    background-color: #f0f0f0;
+    background-image: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+    overscroll-behavior-y: contain;
+    /* overflow: hidden; /* Prevent body scroll */ /* Removed to allow scrolling */
+}
+
+/* Base Container Styling for main views */
+.game-container {
+    text-align: center;
+    background-color: white;
+    padding: 2rem;
+    border-radius: 15px;
+    box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
+    width: 600px;
+    min-height: 630px;
+    max-height: 95vh;
+    overflow-y: auto;
+    position: relative;
+}
+
+/* Top Right Buttons */
+#topRightButtons {
+    position: absolute;
+    top: 15px;
+    right: 15px;
+    display: flex;
+    gap: 10px;
+    z-index: 10;
+}
+
+/* Game Board and Clues Container */
+#gameBoardAndCluesContainer {
+    position: relative;
+    width: var(--spectrum-width);
+    height: var(--spectrum-total-height); /* Use total height variable */
+    margin: 1.25rem auto 0 auto; /* Standardized from 20px */
+    z-index: 1;
+}
+
+/* Reveal Overlay */
+.reveal-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(255, 255, 255, 0.9);
+    backdrop-filter: blur(8px);
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-end; /* Align content to the bottom */
+    align-items: center;
+    z-index: 100;
+    cursor: pointer;
+    font-size: 2em;
+    font-weight: bold;
+    color: #333;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.5s ease-in-out;
+    border-radius: calc(var(--spectrum-width) / 2) calc(var(--spectrum-width) / 2) 0 0;
+    overflow: hidden;
+}
+
+    .reveal-overlay.active {
+        opacity: 1;
+        pointer-events: auto;
+        box-shadow: 0 0 20px 5px rgba(66, 133, 244, 0.7); /* Mimic board highlight */
+    }
+
+    .reveal-overlay p {
+        text-align: center;
+        margin: 0;
+        font-size: 0.6em; /* Smaller for mobile */
+        padding-bottom: 30px;
+        animation: pulse-text 1.5s infinite ease-in-out alternate;
+        word-break: break-word; /* Allow long words to break */
+        white-space: normal; /* Ensure text wraps */
+    }
+@keyframes pulse-text {
+    from {
+        transform: scale(1);
+        opacity: 0.7;
+    }
+    to {
+        transform: scale(1.05);
+        opacity: 1;
+    }
+}
+
+
+/* Specific Button Styles */
+#howToPlayButton {
+    background-color: #4A90E2;
+    color: white;
+    border-radius: 5px;
+    z-index: 10;
+    border: none;
+    transition: background-color 0.3s ease;
+}
+
+#newGameButton {
+    background-color: #f75d59;
+    color: white;
+    border-radius: 5px;
+    z-index: 10;
+    border: none;
+    transition: background-color 0.3s ease;
+}
+
+#howToPlayButton:hover {
+    background-color: #357ABD;
+}
+
+#newGameButton:hover {
+    background-color: #eb4d4b;
+}
+
+.title {
+    font-family: "Orbitron", sans-serif;
+    font-size: 48px;
+    font-weight: 700;
+    color: #4A90E2;
+    text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.1);
+    margin-bottom: 1.25rem; /* Standardized from 20px */
+    letter-spacing: 2px;
+}
+
+.subtitle {
+    font-size: 24px;
+    color: #2f3542;
+    margin-bottom: 1.875rem; /* Standardized from 30px */
+}
+
+.board {
+    width: var(--spectrum-width);
+    height: calc(var(--spectrum-width) / 2);
+    background-color: #e0e0e0;
+    border-radius: calc(var(--spectrum-width) / 2) calc(var(--spectrum-width) / 2) 0 0;
+    position: relative;
+    overflow: hidden;
+    box-shadow: inset 0 5px 10px rgba(0, 0, 0, 0.1);
+    margin: 0 auto;
+}
+
+.board.highlight {
+    box-shadow: 0 0 20px 5px rgba(66, 133, 244, 0.7); /* Example blue glow */
+    transition: box-shadow 0.3s ease-in-out;
+}
+
+.target-area {
+    width: 100%;
+    height: 100%;
+    border-radius: inherit;
+    position: absolute;
+    overflow: hidden;
+}
+
+.needle-container {
+    position: absolute;
+    bottom: 0;
+    left: 50%;
+    width: calc(var(--spectrum-width) * 0.1);
+    height: calc(var(--spectrum-width) * 0.45);
+    transform: translateX(-50%);
+    cursor: pointer;
+}
+
+    .needle {
+        position: absolute;
+        bottom: 0;
+        left: 50%;
+        width: 4px;
+        height: 100%;
+        background-color: #ff4757;
+        transform-origin: bottom center;
+        transition: none; /* Remove transition to avoid interference with JS animation */
+    }
+.clues-container {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-top: 1.25rem; /* Standardized from 20px */
+    height: 60px; /* Explicit height, reconsider if dynamic scaling is needed */
+}
+
+.clue {
+    flex: 1;
+    font-size: 18px;
+    font-weight: bold;
+    color: #2f3542;
+    text-align: center;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    height: 100%;
+    padding: 0 10px;
+}
+
+.bidirectional-arrow {
+    width: calc(var(--spectrum-width) * 0.25);
+    height: 2px;
+    background-color: #4A90E2;
+    position: relative;
+    margin: 0 20px;
+    flex-shrink: 0;
+}
+
+.bidirectional-arrow::before,
+.bidirectional-arrow::after {
+    content: "";
+    position: absolute;
+    top: 50%;
+    width: 10px;
+    height: 10px;
+    border-top: 2px solid #4A90E2;
+    border-right: 2px solid #4A90E2;
+}
+
+.bidirectional-arrow::before {
+    left: 0;
+    transform: translateY(-50%) rotate(-135deg);
+}
+
+.bidirectional-arrow::after {
+    right: 0;
+    transform: translateY(-50%) rotate(45deg);
+}
+
+.controls {
+    margin-top: 1.25rem; /* Standardized from 20px */
+    display: flex;
+    justify-content: center;
+    flex-wrap: wrap;
+    gap: 10px;
+}
+
+button {
+    font-size: 16px;
+    padding: 12px 24px;
+    cursor: pointer;
+    background-color: #357ABD;
+    color: white;
+    border: none;
+    border-radius: 5px;
+    transition: background-color 0.3s ease;
+    flex: 1 0 auto;
+    max-width: 150px;
+    min-width: 120px;
+    box-sizing: border-box;
+}
+
+button:hover {
+    background-color: #4A90E2;
+}
+
+#score,
+#totalScore {
+    margin-top: 1.25rem; /* Standardized from 20px */
+    font-size: 24px;
+    font-weight: bold;
+    color: #2f3542;
+}
+
+/* Modal Styles */
+.modal {
+    display: none;
+    position: fixed;
+    z-index: 1000;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    overflow: auto;
+    background-color: rgba(0, 0, 0, 0.5);
+    backdrop-filter: blur(5px);
+}
+
+.modal-content {
+    background-color: #ffffff;
+    margin: 10% auto;
+    padding: 1.875rem; /* Standardized from 30px */
+    width: 90%;
+    max-width: 600px;
+    border-radius: 15px;
+    box-shadow: 0 5px 30px rgba(0, 0, 0, 0.3);
+    transform: translateY(-50px);
+    opacity: 0;
+    transition: all 0.3s ease-out;
+}
+
+.modal.show .modal-content {
+    transform: translateY(0);
+    opacity: 1;
+}
+
+.modal h2 {
+    color: #4A90E2;
+    font-size: 28px;
+    margin-bottom: 1.25rem; /* Standardized from 20px */
+    text-align: center;
+}
+
+.modal-body {
+    color: #2f3542;
+    font-size: 16px;
+    line-height: 1.6;
+}
+
+.modal-body ol {
+    padding-left: 20px;
+}
+
+.modal-body ul {
+    padding-left: 30px;
+    margin-top: 0.625rem; /* Standardized from 10px */
+}
+
+.score-5 {
+    color: #4A90E2;
+    font-weight: bold;
+}
+
+.score-3 {
+    color: #feca57;
+    font-weight: bold;
+}
+
+.score-1 {
+    color: #ff6b6b;
+    font-weight: bold;
+}
+
+.score-0 {
+    color: #a4b0be;
+    font-weight: bold;
+}
+
+.close-button {
+    display: block;
+    width: 100%;
+    padding: 12px;
+    background-color: #4A90E2;
+    color: white;
+    border: none;
+    border-radius: 5px;
+    font-size: 18px;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+    margin-top: 1.25rem; /* Standardized from 20px */
+}
+
+.close-button:hover {
+    background-color: #357ABD;
+}
+
+/* Team Management Styles */
+.team-management-instructions {
+    font-size: 0.9em;
+    color: #666;
+    margin-bottom: 10px;
+}
+
+.team-score-item {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 8px 10px;
+    margin-bottom: 5px;
+    border: 1px solid #e0e0e0;
+    border-radius: 5px;
+    background-color: #f9f9f9;
+    min-height: 35px;
+}
+
+.edit-icon {
+    font-size: 0.8em;
+    margin-left: 5px;
+    opacity: 0;
+    transition: opacity 0.2s ease-in-out;
+    cursor: pointer;
+}
+
+.team-score-item:hover .edit-icon {
+    opacity: 1;
+}
+
+.team-name-display {
+    cursor: pointer;
+    border-bottom: 1px dashed transparent;
+}
+
+.team-name-display:hover {
+    border-bottom-color: rgba(0, 0, 0, 0.3);
+}
+
+.team-name-input-inline {
+    width: 100px;
+    padding: 2px;
+    border: 1px solid #4A90E2;
+    border-radius: 3px;
+    font-size: inherit;
+    font-weight: inherit;
+    color: inherit;
+    background-color: transparent;
+}
+
+.delete-team-button {
+    background: none;
+    border: none;
+    color: #ff6b6b;
+    font-size: 1.2em;
+    cursor: pointer;
+    padding: 0 5px;
+    transition: transform 0.2s ease;
+    max-width: fit-content;
+}
+
+.delete-team-button:hover {
+    transform: scale(1.2);
+    background-color: transparent;
+}
+
+.delete-team-button:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+/* Turn Indicator */
+#turn-indicator {
+    font-size: 22px;
+    font-weight: bold;
+    color: #357ABD;
+    height: 30px;
+    margin-bottom: 0.9375rem; /* Standardized from 15px */
+    transition: all 0.3s ease-in-out;
+}
+
+/* Info Balloon */
+.info-balloon {
+    display: none; /* Initially hidden */
+    background-color: #f0f0f0;
+    border: 1px solid #ccc;
+    border-radius: 8px;
+    padding: 0.3rem 0.75rem; /* Adjusted padding */
+    font-size: 0.85em;
+    color: #333;
+    text-align: center;
+    margin: 0.625rem auto; /* Standardized from 10px */
+    max-width: 280px; /* Slightly adjusted max-width */
+    box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+}
+
+.info-balloon p {
+    margin: 0;
+}
+
+.psychic-turn {
+    animation: glow 2s ease-in-out infinite alternate;
+}
+
+@keyframes glow {
+    from {
+        box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1), 0 0 10px #c7b9ff;
+    }
+    to {
+        box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1), 0 0 20px #7a4fa3;
+    }
+}
+
+@keyframes shake-zero-points {
+    0% { transform: translateX(0); }
+    25% { transform: translateX(-5px); }
+    50% { transform: translateX(5px); }
+    75% { transform: translateX(-5px); }
+    100% { transform: translateX(0); }
+}
+
+.shake-zero-points {
+    animation: shake-zero-points 0.5s ease-in-out;
+}
+
+@keyframes points-rain-down {
+    0% {
+        opacity: 0;
+        transform: translate(0, 0) scale(0.8) rotate(0deg); /* Relative translation from its own dynamic position */
+    }
+    20% {
+        opacity: 1;
+        transform: translate(0, -10px) scale(1.1) rotate(5deg);
+    }
+    80% {
+        opacity: 1;
+        transform: translate(0, -50px) scale(1) rotate(-5deg);
+    }
+    100% {
+        opacity: 0;
+        transform: translate(0, -100px) scale(0.7) rotate(0deg);
+    }
+}
+
+.score-popup {
+    position: absolute;
+    /* Top, left, and initial transform will be set by JS for randomization */
+    font-size: 2em;
+    font-weight: bold;
+    color: #4CAF50; /* Green for points */
+    text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
+    pointer-events: none;
+    z-index: 1001;
+    animation: points-rain-down 1.5s ease-out forwards;
+    white-space: nowrap;
+}
+
+/* Team Colors */
+:root {
+  --team-color-0-primary: #4f8cff;
+  --team-color-0-secondary: #7aa7ff;
+  --team-color-1-primary: #ff6b9c;
+  --team-color-1-secondary: #ff9ab8;
+  --team-color-2-primary: #5cb85c;
+  --team-color-2-secondary: #8cd68c;
+  --team-color-3-primary: #f0ad4e;
+  --team-color-3-secondary: #f4c27a;
+  --team-color-4-primary: #5bc0de;
+  --team-color-4-secondary: #8cdff4;
+
+  /* Spectrum Sizing Variables */
+  --game-container-padding: 2rem;
+  --base-game-container-width: 600px;
+  --calculated-spectrum-width: calc(var(--base-game-container-width) - (2 * var(--game-container-padding)));
+  --spectrum-width: var(--calculated-spectrum-width);
+  /* Board height (width / 2) + clues-container margin-top (20px) + clues-container height (60px) */
+  --spectrum-total-height: calc(var(--spectrum-width) / 2 + 20px + 60px);
+}
+
+.current-team {
+    font-weight: bold;
+    color: #4A90E2;
+}
+
+#startGame {
+    margin-top: 1rem;
+}
+
+/* Current Team Indicator */
+.team-indicator {
+  position: relative;
+  top: 1rem; /* Standardized from 16px */
+  margin: 0 auto 1rem auto; /* Standardized from 16px */
+  width: fit-content;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 18px;
+  border-radius: 999px;
+  font-family: system-ui, -apple-system, sans-serif;
+  font-weight: 600;
+  letter-spacing: 0.3px;
+  backdrop-filter: blur(8px);
+  border: 1px solid rgba(255,255,255,0.15);
+  box-shadow: 0 8px 24px rgba(0,0,0,0.15);
+  transition: all 0.35s ease;
+  animation: pulseGlow 2.5s ease-in-out infinite;
+  z-index: 5;
+}
+
+.team-indicator__icon {
+  font-size: 18px;
+}
+
+.team-indicator__label {
+  font-size: 12px;
+  opacity: 0.8;
+  text-transform: uppercase;
+}
+
+.team-indicator__name {
+  font-size: 16px;
+  font-weight: 700;
+}
+
+.team-color-0 {
+  background: linear-gradient(135deg, var(--team-color-0-primary), var(--team-color-0-secondary));
+  color: white;
+  box-shadow: 0 0 20px var(--team-color-0-primary);
+}
+
+.team-color-1 {
+  background: linear-gradient(135deg, var(--team-color-1-primary), var(--team-color-1-secondary));
+  color: white;
+  box-shadow: 0 0 20px var(--team-color-1-primary);
+}
+
+.team-color-2 {
+  background: linear-gradient(135deg, var(--team-color-2-primary), var(--team-color-2-secondary));
+  color: white;
+  box-shadow: 0 0 20px var(--team-color-2-primary);
+}
+
+.team-color-3 {
+  background: linear-gradient(135deg, var(--team-color-3-primary), var(--team-color-3-secondary));
+  color: white;
+  box-shadow: 0 0 20px var(--team-color-3-primary);
+}
+
+.team-color-4 {
+  background: linear-gradient(135deg, var(--team-color-4-primary), var(--team-color-4-secondary));
+  color: white;
+  box-shadow: 0 0 20px var(--team-color-4-primary);
+}
+
+@keyframes pulseGlow {
+  0% {
+    transform: scale(1);
+    box-shadow: 0 0 16px var(--team-color-current-primary, rgba(0,0,0,0.2));
+  }
+  50% {
+    transform: scale(1.02);
+    box-shadow: 0 0 28px var(--team-color-current-primary, rgba(255,255,255,0.25));
+  }
+  100% {
+    transform: scale(1);
+    box-shadow: 0 0 16px var(--team-color-current-primary, rgba(0,0,0,0.2));
+  }
+}
+
+@media (max-width: 600px) {
+  .team-indicator {
+    font-size: 14px;
+    padding: 8px 14px;
+  }
+  .team-indicator__icon {
+    font-size: 16px;
+  }
+  .team-indicator__label {
+    font-size: 10px;
+  }
+  .team-indicator__name {
+    font-size: 14px;
+  }
+}
+
+@media (max-width: 768px) {
+    body {
+        background-color: white;
+    }
+
+            .game-container {
+                width: 100%;
+                padding: 1rem;
+                border-radius: 0;
+                box-shadow: none;
+                display: flex; /* Make it a flex container */
+                flex-direction: column; /* Stack children vertically */
+                justify-content: flex-start; /* Align content to the top */
+                gap: 0; /* Remove any default gap between flex items */
+            }
+
+            .game-container > #gameBoardAndCluesContainer {
+                margin-bottom: 0; /* Ensure no bottom margin */
+                height: 14.375rem; /* Explicitly set height to contain board and clues (standardized from 230px) */
+            }
+
+            .game-container > .controls {
+                margin-top: 0; /* Ensure no top margin */
+            }
+
+
+    .reveal-overlay {
+        border-radius: 9.375rem 9.375rem 0 0; /* Standardized from 150px */
+        font-size: 1.2em;
+        width: 18.75rem; /* Standardized from 300px */
+        left: 50%;
+        transform: translateX(-50%);
+        height: 9.375rem; /* Standardized from 150px */
+    }
+
+    .board {
+        width: 18.75rem; /* Standardized from 300px */
+        height: 9.375rem; /* Standardized from 150px */
+        margin: 0 auto;
+    }
+
+    .target-area {
+        width: 18.75rem; /* Standardized from 300px */
+        height: 9.375rem; /* Standardized from 150px */
+    }
+
+    .clues-container {
+        height: 3.75rem; /* Standardized from 60px */
+    }
+
+    #gameBoardAndCluesContainer {
+        width: 18.75rem; /* Standardized from 300px */
+        margin: 0 auto 0 auto; /* Set top margin to 0, keep centered */
+    }
+
+    #score {
+        margin-top: 0; /* Remove top margin */
+        margin-bottom: 1rem; /* Consistent gap below score */
+    }
+
+    #psychic-info-balloon {
+        margin-bottom: 0.5rem; /* Reduced gap below the info balloon */
+    }
+
+    .controls {
+        margin-top: -20px; /* Use negative margin to close the gap */
+    }
+
+    #totalScore {
+        margin-top: 20px; /* Revert margin for mobile */
+    }
+
+    #turn-indicator {
+        display: none; /* Hide for mobile to save space and avoid redundancy */
+    }
