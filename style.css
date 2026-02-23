@@ -192,7 +192,7 @@ body {
     align-items: center;
     justify-content: center;
     margin-top: 1.25rem; /* Standardized from 20px */
-    height: 60px; /* Explicit height, reconsider if dynamic scaling is needed */
+    height: auto; /* Changed from fixed 60px to auto */
 }
 
 .clue {
@@ -325,6 +325,7 @@ button:hover {
 .modal-body ul {
     padding-left: 30px;
     margin-top: 0.625rem; /* Standardized from 10px */
+    text-align: left; /* Left align bullet points */
 }
 
 .score-5 {
@@ -699,10 +700,15 @@ button:hover {
     }
 
     .clues-container {
-        height: 3.75rem; /* Standardized from 60px */
+        height: auto !important; /* Force auto height */
+    }
+
+    .clue {
+        height: auto !important; /* Force auto height */
     }
 
     #gameBoardAndCluesContainer {
+        height: auto !important; /* Force auto height */
         width: 18.75rem; /* Standardized from 300px */
         margin: 0 auto 0 auto; /* Set top margin to 0, keep centered */
     }
@@ -717,7 +723,7 @@ button:hover {
     }
 
     .controls {
-        margin-top: -20px; /* Use negative margin to close the gap */
+        margin-top: 0; /* Removed negative margin, set to 0 */
     }
 
     #totalScore {
