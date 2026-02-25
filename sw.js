@@ -1,10 +1,14 @@
-const CACHE_NAME = 'wavelength-game-cache-v1';
+const CACHE_NAME = 'wavelength-game-cache-v2';
 const urlsToCache = [
   './', // Caches the current directory
   './index.html',
   './style.css',
   './script.js',
   './clues.json',
+  './privacy.html',
+  './terms.html',
+  './about.html',
+  './changelog.html',
   'https://cdn.jsdelivr.net/npm/canvas-confetti@1.5.1/dist/confetti.browser.min.js',
   'https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;700&display=swap',
   'https://fonts.googleapis.com/css2?family=Orbitron:wght@700&display=swap'
@@ -21,17 +25,34 @@ self.addEventListener('install', (event) => {
 });
 
 self.addEventListener('fetch', (event) => {
-  event.respondWith(
-    caches.match(event.request)
-      .then((response) => {
-        // Cache hit - return response
-        if (response) {
+  // For HTML requests, try the network first, then fall back to cache
+  if (event.request.mode === 'navigate' || (event.request.method === 'GET' && event.request.headers.get('accept').includes('text/html'))) {
+    event.respondWith(
+      fetch(event.request).then((response) => {
+        // Cache the fetched response for future offline use
+        return caches.open(CACHE_NAME).then((cache) => {
+          cache.put(event.request, response.clone());
           return response;
-        }
-        // No cache hit - fetch from network
-        return fetch(event.request);
+        });
+      }).catch(() => {
+        // If network fails, serve from cache
+        return caches.match(event.request);
       })
-  );
+    );
+  } else {
+    // For other assets (CSS, JS, images, etc.), use cache-first
+    event.respondWith(
+      caches.match(event.request)
+        .then((response) => {
+          // Cache hit - return response
+          if (response) {
+            return response;
+          }
+          // No cache hit - fetch from network
+          return fetch(event.request);
+        })
+    );
+  }
 });
 
 self.addEventListener('activate', (event) => {

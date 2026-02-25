@@ -14,12 +14,9 @@ const revealOverlay = document.getElementById("revealOverlay"); // New: Tap to R
 const psychicInfoBalloon = document.getElementById("psychic-info-balloon"); // New: Psychic Info Balloon
 
 // Modal declarations - ensure modal is declared before its close button
-const modal = document.getElementById("howToPlayModal");
-const howToPlayButton = document.getElementById("howToPlayButton");
-const closeButton = modal.querySelector(".close-button");
+
 
 const changeLogModal = document.getElementById("changeLogModal");
-const changeLogButton = document.getElementById("changeLogButton");
 const changeLogCloseButton = changeLogModal.querySelector(".close-button");
 
 let isDragging = false;
@@ -852,36 +849,25 @@ document.addEventListener("DOMContentLoaded", () => {
     const closeButton = modal.querySelector(".close-button");
 
     const changeLogModal = document.getElementById("changeLogModal");
-    const changeLogButton = document.getElementById("changeLogButton");
     const changeLogCloseButton = changeLogModal.querySelector(".close-button");
-
-    // How To Play modal functionality
-    howToPlayButton.onclick = function () {
-        modal.style.display = "block";
-        setTimeout(() => modal.classList.add("show"), 10);
-    }
-
-    closeButton.onclick = function () {
-        modal.classList.remove("show");
-        setTimeout(() => modal.style.display = "none", 300);
-    }
-
-    // Change Log modal functionality
-    changeLogButton.onclick = function () {
-        changeLogModal.style.display = "block";
-        setTimeout(() => changeLogModal.classList.add("show"), 10);
-    };
 
     changeLogCloseButton.onclick = function () {
         changeLogModal.classList.remove("show");
         setTimeout(() => changeLogModal.style.display = "none", 300);
     };
 
+    howToPlayButton.onclick = function () {
+        modal.style.display = "block";
+        setTimeout(() => modal.classList.add("show"), 10);
+    };
+
+    closeButton.onclick = function () {
+        modal.classList.remove("show");
+        setTimeout(() => modal.style.display = "none", 300);
+    };
+
     window.onclick = function (event) {
-        if (event.target == modal) {
-            modal.classList.remove("show");
-            setTimeout(() => modal.style.display = "none", 300);
-        }
+
         if (event.target == changeLogModal) {
             changeLogModal.classList.remove("show");
             setTimeout(() => changeLogModal.style.display = "none", 300);
