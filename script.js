@@ -653,10 +653,12 @@ function resetGame() {
 
 
 newGameButton.addEventListener("click", () => {
-    adBreak({
-        type: 'start',
-        name: 'new-game'
-    });
+    if (typeof adBreak === 'function') {
+        adBreak({
+            type: 'start',
+            name: 'new-game'
+        });
+    }
     resetGame();
 });
 
@@ -670,14 +672,16 @@ skipQuestionButton.addEventListener("click", () => {
 
 nextRoundButton.addEventListener("click", () => {
     roundCount++;
-    if (roundCount % 5 === 0) {  // every 5th round
-        adBreak({
-            type: 'next',
-            name: 'next-round',
-            adBreakDone: (info) => {
-                console.log('Ad break status:', info.breakStatus);
-            }
-        });
+    if (roundCount % 5 === 0) {
+        if (typeof adBreak === 'function') {
+            adBreak({
+                type: 'next',
+                name: 'next-round',
+                adBreakDone: (info) => {
+                    console.log('Ad break status:', info.breakStatus);
+                }
+            });
+        }
     }
 
     currentTeamIndex = (currentTeamIndex + 1) % teams.length;
