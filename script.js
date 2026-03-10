@@ -25,6 +25,7 @@ let isTargetVisible = true;
 let totalScore = 0;
 let canMoveNeedle = false;
 let isPostGuessPhase = false;
+let roundCount = 0;
 
 let clues;
 
@@ -652,8 +653,11 @@ function resetGame() {
 
 
 newGameButton.addEventListener("click", () => {
-
-    resetGame(); // Call the new reset function
+    adBreak({
+        type: 'start',
+        name: 'new-game'
+    });
+    resetGame();
 });
 
 skipQuestionButton.addEventListener("click", () => {
@@ -665,6 +669,17 @@ skipQuestionButton.addEventListener("click", () => {
 });
 
 nextRoundButton.addEventListener("click", () => {
+    roundCount++;
+    if (roundCount % 5 === 0) {  // every 5th round
+        adBreak({
+            type: 'next',
+            name: 'next-round',
+            adBreakDone: (info) => {
+                console.log('Ad break status:', info.breakStatus);
+            }
+        });
+    }
+
     currentTeamIndex = (currentTeamIndex + 1) % teams.length;
     updateScoreDisplay();
     scoreElement.textContent = "";
