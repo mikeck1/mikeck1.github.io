@@ -11,7 +11,8 @@
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@500;600;700&family=Nunito:wght@400;600;700;800&display=swap" rel="stylesheet" />
-    <link rel="stylesheet" href="style.css" />
+    <!-- ?v= makes old service workers fetch fresh copies; keep in sync with sw.js PRECACHE -->
+    <link rel="stylesheet" href="style.css?v=7" />
 
     <!-- Google tag (gtag.js) -->
     <script async src="https://www.googletagmanager.com/gtag/js?id=G-HZ0TQPSV7S"></script>
@@ -299,7 +300,7 @@
     <div class="toast-region" id="toasts" aria-live="polite"></div>
 
     <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.5.1/dist/confetti.browser.min.js"></script>
-    <script src="script.js"></script>
+    <script src="script.js?v=7"></script>
     <script>
         if ('serviceWorker' in navigator) {
             const isLocal = /^(localhost|127\.0\.0\.1)$/.test(location.hostname);
