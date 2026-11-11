@@ -1,1203 +1,1253 @@
-const needleContainer = document.getElementById("needleContainer");
-const needle = document.getElementById("needle");
-const targetArea = document.getElementById("targetArea");
-const board = document.querySelector(".board");
-const toggleButton = document.getElementById("toggleButton");
-const nextRoundButton = document.getElementById("nextRoundButton");
-const skipQuestionButton = document.getElementById("skipQuestionButton");
-const newGameButton = document.getElementById("newGameButton");
-const cluesElement = document.getElementById("clues");
-const scoreElement = document.getElementById("score");
-const totalScoreElement = document.getElementById("totalScore");
-const turnIndicator = document.getElementById("turn-indicator");
-const revealOverlay = document.getElementById("revealOverlay"); // New: Tap to Reveal Overlay
-const psychicInfoBalloon = document.getElementById("psychic-info-balloon"); // New: Psychic Info Balloon
+(() => {
+    'use strict';
 
-// Modal declarations - ensure modal is declared before its close button
+    /* ======================================================================
+       Constants
+       ====================================================================== */
 
+    const KEYS = {
+        game: 'wl.game.v2',
+        deck: 'wl.deck.v1',
+        seenHelp: 'wl.seenHelp',
+        legacyGame: 'wavelengthGameState',
+    };
 
-const changeLogModal = document.getElementById("changeLogModal");
-const changeLogCloseButton = changeLogModal.querySelector(".close-button");
+    const TEAM_COLORS = ['#ff5d8f', '#4cc9f0', '#ffc94a', '#3ee6b0', '#a78bfa', '#ff8a5c'];
 
-let isDragging = false;
-let targetAngle = 0;
-let isTargetVisible = true;
-let totalScore = 0;
-let canMoveNeedle = false;
-let isPostGuessPhase = false;
+    // Left/right colors for spectrum cards; picked per card so each one looks distinct.
+    const CARD_COLORS = [
+        ['#3e63dd', '#e5484d'],
+        ['#7b4dff', '#f76b15'],
+        ['#12a594', '#d6409f'],
+        ['#0091ff', '#e54666'],
+        ['#8e4ec6', '#30a46c'],
+        ['#0d9488', '#ea580c'],
+        ['#2563eb', '#db2777'],
+        ['#6e56cf', '#e5484d'],
+    ];
+    const BRAND_COLORS = ['#ff5d8f', '#7c5cff'];
 
-let clues;
+    const MAX_TEAMS = 6;
+    const MAX_CARD_LEN = 60;
+    const CX = 200;
+    const CY = 200;
 
-const gameContainer = document.querySelector('.game-container');
+    // Score bands: half-width in degrees from the target center.
+    const BANDS = [
+        { pts: 5, half: 4.5 },
+        { pts: 3, half: 13.5 },
+        { pts: 1, half: 22.5 },
+    ];
 
+    const SCORE_TEXT = { 5: 'Bullseye!', 3: 'So close!', 1: 'Not bad!', 0: 'Missed it!' };
+    const SCORE_COLOR = { 5: 'var(--band-5)', 3: 'var(--band-3)', 1: 'var(--band-1)', 0: '#b9b2df' };
 
+    // Used only if clues.json can't be loaded.
+    const FALLBACK_DECK = [
+        ['Cold', 'Hot'], ['Tiny', 'Giant'], ['Slow', 'Fast'], ['Quiet', 'Loud'],
+        ['Soft', 'Hard'], ['Yucky Food', 'Yummy Food'], ['Boring Toy', 'Awesome Toy'],
+        ['Not Scary', 'Very Scary'], ['Real', 'Make-Believe'], ['Underrated', 'Overrated'],
+    ];
 
+    /* ======================================================================
+       Helpers
+       ====================================================================== */
 
-// Now that all DOM elements are declared, we can parse the JSON and use the buttons.
-const cluesJSONString = `[
-    [
-        "Cold",
-        "Hot"
-    ],
-    [
-        "Tiny",
-        "Giant"
-    ],
-    [
-        "Slow",
-        "Fast"
-    ],
-    [
-        "Quiet",
-        "Loud"
-    ],
-    [
-        "Soft",
-        "Hard"
-    ],
-    [
-        "Light as a Feather",
-        "Super Heavy"
-    ],
-    [
-        "Smooth",
-        "Bumpy"
-    ],
-    [
-        "Dry",
-        "Soaking Wet"
-    ],
-    [
-        "Short",
-        "Tall"
-    ],
-    [
-        "Dark",
-        "Bright"
-    ],
-    [
-        "Sour",
-        "Sweet"
-    ],
-    [
-        "Stinky",
-        "Smells Amazing"
-    ],
-    [
-        "Squishy",
-        "Crunchy"
-    ],
-    [
-        "Sparkling Clean",
-        "Super Messy"
-    ],
-    [
-        "Sleepy",
-        "Wide Awake"
-    ],
-    [
-        "Down Low",
-        "Up High"
-    ],
-    [
-        "Close By",
-        "Far, Far Away"
-    ],
-    [
-        "Brand New",
-        "Really Old"
-    ],
-    [
-        "Plain",
-        "Colorful"
-    ],
-    [
-        "Round",
-        "Pointy"
-    ],
-    [
-        "Scaly",
-        "Fluffy"
-    ],
-    [
-        "Calm",
-        "Wild"
-    ],
-    [
-        "Sinks",
-        "Floats"
-    ],
-    [
-        "Straight",
-        "Wiggly"
-    ],
-    [
-        "Sticky",
-        "Slippery"
-    ],
-    [
-        "Scary Animal",
-        "Cuddly Animal"
-    ],
-    [
-        "Slow Animal",
-        "Speedy Animal"
-    ],
-    [
-        "Quiet Animal",
-        "Noisy Animal"
-    ],
-    [
-        "Tricky Pet",
-        "Perfect Pet"
-    ],
-    [
-        "Lazy Animal",
-        "Busy Animal"
-    ],
-    [
-        "Silly-Looking Animal",
-        "Cool-Looking Animal"
-    ],
-    [
-        "Animal You'd Never Ride",
-        "Animal You'd Love to Ride"
-    ],
-    [
-        "Sneaky Animal",
-        "Clumsy Animal"
-    ],
-    [
-        "Worst Class Pet",
-        "Best Class Pet"
-    ],
-    [
-        "Boring Zoo Exhibit",
-        "Best Zoo Exhibit"
-    ],
-    [
-        "Yucky Food",
-        "Yummy Food"
-    ],
-    [
-        "Breakfast Food",
-        "Dinner Food"
-    ],
-    [
-        "Tidy Food",
-        "Messy Food"
-    ],
-    [
-        "Little Snack",
-        "Giant Feast"
-    ],
-    [
-        "Mild",
-        "Spicy"
-    ],
-    [
-        "Worst Pizza Topping",
-        "Best Pizza Topping"
-    ],
-    [
-        "Worst Ice Cream Flavor",
-        "Best Ice Cream Flavor"
-    ],
-    [
-        "Everyday Food",
-        "Special Treat"
-    ],
-    [
-        "Spoon Food",
-        "Finger Food"
-    ],
-    [
-        "Boring Sandwich",
-        "Amazing Sandwich"
-    ],
-    [
-        "Worst Lunchbox Surprise",
-        "Best Lunchbox Surprise"
-    ],
-    [
-        "Better Cold",
-        "Better Hot"
-    ],
-    [
-        "Weird Food Combo",
-        "Perfect Food Combo"
-    ],
-    [
-        "Worst Road Trip Snack",
-        "Best Road Trip Snack"
-    ],
-    [
-        "Worst School Lunch",
-        "Best School Lunch"
-    ],
-    [
-        "Boring Toy",
-        "Awesome Toy"
-    ],
-    [
-        "Indoor Fun",
-        "Outdoor Fun"
-    ],
-    [
-        "Easy Game",
-        "Tricky Game"
-    ],
-    [
-        "Fun Alone",
-        "Fun With Friends"
-    ],
-    [
-        "Gentle Ride",
-        "Wild Ride"
-    ],
-    [
-        "Terrible Hiding Spot",
-        "Great Hiding Spot"
-    ],
-    [
-        "Boring Playground Thing",
-        "Best Playground Thing"
-    ],
-    [
-        "Easy Sport",
-        "Hard Sport"
-    ],
-    [
-        "Boring Rainy Day Activity",
-        "Best Rainy Day Activity"
-    ],
-    [
-        "Sleepy Birthday Party",
-        "Epic Birthday Party"
-    ],
-    [
-        "Easy to Draw",
-        "Hard to Draw"
-    ],
-    [
-        "Easy to Build",
-        "Hard to Build"
-    ],
-    [
-        "Calm Hobby",
-        "Exciting Hobby"
-    ],
-    [
-        "Quick Game",
-        "Game That Takes Forever"
-    ],
-    [
-        "Boring Car Ride Game",
-        "Fun Car Ride Game"
-    ],
-    [
-        "Wobbly Fort Material",
-        "Sturdy Fort Material"
-    ],
-    [
-        "Worst Costume",
-        "Best Costume"
-    ],
-    [
-        "Boring Video Game",
-        "Can't-Stop-Playing Video Game"
-    ],
-    [
-        "Boring School Subject",
-        "Fascinating School Subject"
-    ],
-    [
-        "Easy Homework",
-        "Hard Homework"
-    ],
-    [
-        "Worst Field Trip",
-        "Best Field Trip"
-    ],
-    [
-        "Silly Homework Excuse",
-        "Believable Homework Excuse"
-    ],
-    [
-        "Useless Fact",
-        "Mind-Blowing Fact"
-    ],
-    [
-        "Easy Word to Spell",
-        "Hard Word to Spell"
-    ],
-    [
-        "Boring Show-and-Tell",
-        "Amazing Show-and-Tell"
-    ],
-    [
-        "Easy to Learn",
-        "Takes Years to Master"
-    ],
-    [
-        "Tough Group Project Partner",
-        "Dream Group Project Partner"
-    ],
-    [
-        "Book You Can't Finish",
-        "Book You Can't Put Down"
-    ],
-    [
-        "Useless Superpower",
-        "Awesome Superpower"
-    ],
-    [
-        "Silly Superhero Name",
-        "Mighty Superhero Name"
-    ],
-    [
-        "Friendly Monster",
-        "Spooky Monster"
-    ],
-    [
-        "Not Magical",
-        "Very Magical"
-    ],
-    [
-        "Real",
-        "Make-Believe"
-    ],
-    [
-        "Useless Robot",
-        "Helpful Robot"
-    ],
-    [
-        "Worst Treasure to Find",
-        "Best Treasure to Find"
-    ],
-    [
-        "Boring Place to Explore",
-        "Amazing Place to Explore"
-    ],
-    [
-        "Terrible Dragon Name",
-        "Perfect Dragon Name"
-    ],
-    [
-        "Silly Wish",
-        "Smart Wish"
-    ],
-    [
-        "Worst Sidekick",
-        "Best Sidekick"
-    ],
-    [
-        "Old-Timey",
-        "Futuristic"
-    ],
-    [
-        "Background Character",
-        "Main Character"
-    ],
-    [
-        "Useless Invention",
-        "World-Changing Invention"
-    ],
-    [
-        "Chore You Dread",
-        "Chore You Don't Mind"
-    ],
-    [
-        "Itchy Clothes",
-        "Comfy Clothes"
-    ],
-    [
-        "Annoying Sound",
-        "Satisfying Sound"
-    ],
-    [
-        "Forgettable Gift",
-        "Thoughtful Gift"
-    ],
-    [
-        "Morning Thing",
-        "Nighttime Thing"
-    ],
-    [
-        "School Day Thing",
-        "Weekend Thing"
-    ],
-    [
-        "Winter Thing",
-        "Summer Thing"
-    ],
-    [
-        "Nice to Have",
-        "Can't Live Without"
-    ],
-    [
-        "Costs Pennies",
-        "Costs a Fortune"
-    ],
-    [
-        "Fits in Your Pocket",
-        "Needs a Truck"
-    ],
-    [
-        "Worst Weather",
-        "Best Weather"
-    ],
-    [
-        "Boring Bedtime Story",
-        "Great Bedtime Story"
-    ],
-    [
-        "Worst Thing to Step On",
-        "Best Thing to Step On"
-    ],
-    [
-        "Not Scary",
-        "Very Scary"
-    ],
-    [
-        "Hard to Share",
-        "Easy to Share"
-    ],
-    [
-        "Takes a Second",
-        "Takes All Day"
-    ],
-    [
-        "Ordinary",
-        "Fancy"
-    ],
-    [
-        "Easy to Lose",
-        "Impossible to Lose"
-    ],
-    [
-        "Worst Place to Nap",
-        "Best Place to Nap"
-    ],
-    [
-        "Bad Thing to Bring Camping",
-        "Great Thing to Bring Camping"
-    ],
-    [
-        "Bad Thing to Bring to the Beach",
-        "Great Thing to Bring to the Beach"
-    ],
-    [
-        "Easy Job",
-        "Hard Job"
-    ],
-    [
-        "Boring Job",
-        "Dream Job"
-    ],
-    [
-        "Makes You Grumpy",
-        "Makes You Smile"
-    ],
-    [
-        "Not Funny",
-        "Hilarious"
-    ],
-    [
-        "Embarrassing",
-        "Makes You Proud"
-    ],
-    [
-        "Stressful",
-        "Relaxing"
-    ],
-    [
-        "Small Act of Kindness",
-        "Huge Act of Kindness"
-    ],
-    [
-        "Rude",
-        "Polite"
-    ],
-    [
-        "Tough Teammate Habit",
-        "Great Teammate Habit"
-    ],
-    [
-        "Takes a Little Courage",
-        "Takes a Lot of Courage"
-    ],
-    [
-        "Joke That Flops",
-        "Joke Everyone Laughs At"
-    ],
-    [
-        "Underrated",
-        "Overrated"
-    ],
-    [
-        "Forgettable Song",
-        "Song Stuck in Your Head"
-    ],
-    [
-        "Movie You'd Sleep Through",
-        "Movie You'd Watch Again"
-    ],
-    [
-        "Out of Style",
-        "Trendy"
-    ],
-    [
-        "Useless App",
-        "Must-Have App"
-    ],
-    [
-        "Worst Team Name",
-        "Best Team Name"
-    ],
-    [
-        "Worst Band Name",
-        "Best Band Name"
-    ],
-    [
-        "Cringey",
-        "Cool"
-    ],
-    [
-        "Hardly Anyone Knows It",
-        "Everyone Knows It"
-    ],
-    [
-        "Skill Nobody Notices",
-        "Skill That Wows Everyone"
-    ],
-    [
-        "Forgettable Mascot",
-        "Lovable Mascot"
-    ]
-]`;
+    const $ = (sel, root = document) => root.querySelector(sel);
 
-try {
-    clues = JSON.parse(cluesJSONString);
-} catch (error) {
-    console.error('Error parsing clues JSON:', error);
-    clues = []; // Ensure clues is always an array even if parsing fails
-}
+    const store = {
+        get(key) {
+            try {
+                const raw = localStorage.getItem(key);
+                return raw ? JSON.parse(raw) : null;
+            } catch {
+                return null;
+            }
+        },
+        set(key, value) {
+            try { localStorage.setItem(key, JSON.stringify(value)); } catch { /* storage full or blocked */ }
+        },
+        remove(key) {
+            try { localStorage.removeItem(key); } catch { /* ignore */ }
+        },
+    };
 
+    const esc = (s) => String(s).replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+    const clamp = (v, lo, hi) => Math.max(lo, Math.min(hi, v));
+    const icon = (name) => `<svg class="i"><use href="#i-${name}"/></svg>`;
+    const plural = (n, word) => `${n} ${word}${n === 1 ? '' : 's'}`;
 
-// Helper to update debug status on screen
-const debugStatusDiv = document.getElementById('gemini-debug-status');
-function updateDebugStatus(message) {
-    if (debugStatusDiv) {
-        debugStatusDiv.textContent = new Date().toLocaleTimeString() + " - " + message + "\n" + debugStatusDiv.textContent;
-        // Keep only the last few messages to prevent overflow
-        const messages = debugStatusDiv.textContent.split('\n').filter(Boolean);
-        if (messages.length > 10) {
-            debugStatusDiv.textContent = messages.slice(0, 10).join('\n');
+    function debounce(fn, ms) {
+        let t;
+        return (...args) => {
+            clearTimeout(t);
+            t = setTimeout(() => fn(...args), ms);
+        };
+    }
+
+    function hash(str) {
+        let h = 5381;
+        for (let i = 0; i < str.length; i++) h = ((h << 5) + h + str.charCodeAt(i)) >>> 0;
+        return h;
+    }
+
+    function restartAnimation(el, cls) {
+        el.classList.remove(cls);
+        void el.offsetWidth;
+        el.classList.add(cls);
+    }
+
+    /* ======================================================================
+       Cards: parsing, normalizing, keys
+       ====================================================================== */
+
+    const cleanText = (s) => String(s ?? '').replace(/\s+/g, ' ').trim().slice(0, MAX_CARD_LEN);
+    const cardKey = (l, r) => `${cleanText(l).toLowerCase()}|${cleanText(r).toLowerCase()}`;
+
+    function splitCsv(line) {
+        const out = [];
+        let cur = '';
+        let quoted = false;
+        for (let i = 0; i < line.length; i++) {
+            const ch = line[i];
+            if (quoted) {
+                if (ch === '"' && line[i + 1] === '"') { cur += '"'; i++; }
+                else if (ch === '"') quoted = false;
+                else cur += ch;
+            } else if (ch === '"') {
+                quoted = true;
+            } else if (ch === ',') {
+                out.push(cur);
+                cur = '';
+            } else {
+                cur += ch;
+            }
+        }
+        out.push(cur);
+        return out;
+    }
+
+    // Split "Left | Right" style lines. Returns [left, right] or null.
+    function splitLine(line) {
+        for (const sep of ['|', '\t', '↔', '<->', '<>']) {
+            if (line.includes(sep)) {
+                const parts = line.split(sep);
+                return parts.length === 2 ? parts : null;
+            }
+        }
+        const csv = splitCsv(line);
+        if (csv.length === 2) return csv;
+        for (const sep of [' - ', ' – ', ' — ']) {
+            if (line.includes(sep)) {
+                const parts = line.split(sep);
+                return parts.length === 2 ? parts : null;
+            }
+        }
+        return null;
+    }
+
+    function toPair(item) {
+        if (Array.isArray(item) && item.length >= 2) return [cleanText(item[0]), cleanText(item[1])];
+        if (item && typeof item === 'object') {
+            const l = item.left ?? item.l ?? item.min;
+            const r = item.right ?? item.r ?? item.max;
+            if (l != null && r != null) return [cleanText(l), cleanText(r)];
+        }
+        if (typeof item === 'string') {
+            const parts = splitLine(item);
+            if (parts) return [cleanText(parts[0]), cleanText(parts[1])];
+        }
+        return null;
+    }
+
+    function pairsFromList(list) {
+        const cards = [];
+        const seen = new Set();
+        let skipped = 0;
+        let dupes = 0;
+        for (const item of list) {
+            const pair = toPair(item);
+            if (!pair || !pair[0] || !pair[1]) { skipped++; continue; }
+            const key = cardKey(...pair);
+            if (seen.has(key)) { dupes++; continue; }
+            seen.add(key);
+            cards.push(pair);
+        }
+        return { cards, skipped, dupes };
+    }
+
+    // Accepts: JSON array of pairs, JSON {cards: [...]}, CSV, or one "Left | Right" per line.
+    function parseCards(text) {
+        const t = String(text || '').trim();
+        if (!t) return { cards: [], skipped: 0, dupes: 0 };
+
+        if (/^[\[{]/.test(t)) {
+            try {
+                const data = JSON.parse(t);
+                const list = Array.isArray(data) ? data : (data.cards || data.deck || data.clues || []);
+                if (Array.isArray(list)) return pairsFromList(list);
+            } catch {
+                /* not JSON; fall through to line parsing */
+            }
+        }
+
+        const lines = t.split(/\r?\n/)
+            .map((l) => l.trim())
+            .filter((l) => l && !l.startsWith('#') && !l.startsWith('//'))
+            .filter((l, i) => !(i === 0 && /^"?left"?\s*[,|\t]\s*"?right"?$/i.test(l)));
+        return pairsFromList(lines);
+    }
+
+    /* ======================================================================
+       Deck
+       ====================================================================== */
+
+    let uid = 0;
+    let defaultDeck = [];
+    let deck = []; // [{ id, left, right }]
+    let deckIsCustom = false;
+
+    const makeItem = ([left, right]) => ({ id: ++uid, left, right });
+    const isPlayable = (c) => c.left.trim() && c.right.trim();
+    const playableCards = () => deck.filter(isPlayable).map((c) => [c.left.trim(), c.right.trim()]);
+    const deckKeys = () => new Set(deck.filter(isPlayable).map((c) => cardKey(c.left, c.right)));
+
+    async function loadDefaultDeck() {
+        try {
+            const res = await fetch('clues.json');
+            if (!res.ok) throw new Error(`HTTP ${res.status}`);
+            const { cards } = pairsFromList(await res.json());
+            if (cards.length) return cards;
+        } catch (err) {
+            console.warn('Could not load clues.json, using fallback deck.', err);
+        }
+        return FALLBACK_DECK.map((c) => c.slice());
+    }
+
+    function loadDeck() {
+        const saved = store.get(KEYS.deck);
+        if (saved && Array.isArray(saved.cards)) {
+            deckIsCustom = true;
+            return saved.cards
+                .map(toPair)
+                .filter((p) => p && (p[0] || p[1]))
+                .map(makeItem);
+        }
+        deckIsCustom = false;
+        return defaultDeck.map(makeItem);
+    }
+
+    function saveDeck() {
+        deckIsCustom = true;
+        store.set(KEYS.deck, {
+            updated: new Date().toISOString(),
+            cards: deck.filter((c) => c.left.trim() || c.right.trim()).map((c) => [c.left, c.right]),
+        });
+    }
+
+    const saveDeckSoon = debounce(saveDeck, 250);
+
+    function cardColors(card) {
+        if (!card) return BRAND_COLORS;
+        return CARD_COLORS[hash(cardKey(card[0], card[1])) % CARD_COLORS.length];
+    }
+
+    /* ======================================================================
+       Game state
+       ====================================================================== */
+
+    const PHASES = ['ready', 'psychic', 'guess', 'reveal'];
+
+    function defaultState() {
+        return {
+            teams: [
+                { name: 'Team 1', score: 0, color: 0 },
+                { name: 'Team 2', score: 0, color: 1 },
+            ],
+            current: 0,
+            round: 1,
+            phase: 'ready',
+            target: 0,
+            needle: 0,
+            card: null,
+            lastScore: null,
+            seen: [],
+        };
+    }
+
+    function loadState() {
+        const base = defaultState();
+        const saved = store.get(KEYS.game);
+        let s = base;
+
+        if (saved && Array.isArray(saved.teams) && saved.teams.length) {
+            s = { ...base, ...saved };
+        } else {
+            // Carry over team names and scores from the previous version of the app.
+            const legacy = store.get(KEYS.legacyGame);
+            if (legacy && Array.isArray(legacy.teams) && legacy.teams.length) {
+                s.teams = legacy.teams.map((t, i) => ({ name: String(t.name || ''), score: Number(t.score) || 0, color: i }));
+                s.current = Number(legacy.currentTeamIndex) || 0;
+            }
+        }
+
+        s.teams = s.teams.slice(0, MAX_TEAMS).map((t, i) => ({
+            name: typeof t.name === 'string' ? t.name.slice(0, 24) : `Team ${i + 1}`,
+            score: Number.isFinite(t.score) ? t.score : 0,
+            color: Number.isInteger(t.color) ? t.color % TEAM_COLORS.length : i % TEAM_COLORS.length,
+        }));
+        s.current = clamp(Number(s.current) || 0, 0, s.teams.length - 1);
+        s.round = Math.max(1, Number(s.round) || 1);
+        s.target = clamp(Number(s.target) || 0, -90, 90);
+        s.needle = clamp(Number(s.needle) || 0, -90, 90);
+        s.seen = Array.isArray(s.seen) ? s.seen : [];
+        if (!Array.isArray(s.card) || s.card.length !== 2) s.card = null;
+        if (!PHASES.includes(s.phase) || (s.phase !== 'ready' && !s.card)) s.phase = 'ready';
+        if (s.phase === 'reveal' && !Number.isFinite(s.lastScore)) s.lastScore = scoreFor(s.needle, s.target);
+        return s;
+    }
+
+    let state = defaultState();
+    let suspense = false; // true for a moment while the shutter opens on reveal
+
+    const save = () => store.set(KEYS.game, state);
+    const teamName = (t, i) => (t.name.trim() || `Team ${i + 1}`);
+    const currentTeam = () => state.teams[state.current] || state.teams[0];
+    const teamColor = (t) => TEAM_COLORS[t.color % TEAM_COLORS.length];
+
+    function scoreFor(needle, target) {
+        const diff = Math.abs(needle - target);
+        for (const band of BANDS) if (diff <= band.half) return band.pts;
+        return 0;
+    }
+
+    function drawCard(exclude) {
+        const pool = playableCards();
+        if (!pool.length) return null;
+        const excludeKey = exclude ? cardKey(exclude[0], exclude[1]) : null;
+        const notExcluded = (c) => pool.length === 1 || cardKey(c[0], c[1]) !== excludeKey;
+
+        let seen = new Set(state.seen);
+        let candidates = pool.filter((c) => !seen.has(cardKey(c[0], c[1])) && notExcluded(c));
+        if (!candidates.length) {
+            // Everyone has seen every card: reshuffle.
+            state.seen = [];
+            seen = new Set();
+            candidates = pool.filter(notExcluded);
+        }
+        const card = candidates[Math.floor(Math.random() * candidates.length)];
+        state.seen.push(cardKey(card[0], card[1]));
+        if (state.seen.length > pool.length) state.seen = state.seen.slice(-pool.length);
+        return card;
+    }
+
+    /* ======================================================================
+       DOM references
+       ====================================================================== */
+
+    const root = document.documentElement;
+    const scoreboardEl = $('#scoreboard');
+    const turnEl = $('#turn');
+    const turnEyebrow = $('#turnEyebrow');
+    const turnTitle = $('#turnTitle');
+    const turnHint = $('#turnHint');
+    const dialWrap = $('#dialWrap');
+    const dial = $('#dial');
+    const targetG = $('#target');
+    const needleG = $('#needle');
+    const dialCta = $('#dialCta');
+    const floatPoints = $('#floatPoints');
+    const cardEl = $('#card');
+    const cardLeft = $('#cardLeft');
+    const cardRight = $('#cardRight');
+    const actionsEl = $('#actions');
+    const deckBadge = $('#deckBadge');
+    const rimA = $('#rimA');
+    const rimB = $('#rimB');
+    const toastRegion = $('#toasts');
+
+    /* ======================================================================
+       Dial drawing (static parts)
+       ====================================================================== */
+
+    const polar = (angleDeg, r) => {
+        const a = (angleDeg * Math.PI) / 180;
+        return [CX + r * Math.sin(a), CY - r * Math.cos(a)];
+    };
+
+    function wedgePath(a1, a2, r) {
+        const [x1, y1] = polar(a1, r);
+        const [x2, y2] = polar(a2, r);
+        return `M ${CX} ${CY} L ${x1.toFixed(2)} ${y1.toFixed(2)} A ${r} ${r} 0 0 1 ${x2.toFixed(2)} ${y2.toFixed(2)} Z`;
+    }
+
+    function buildDial() {
+        // Target bands, drawn centered on 0deg; the group is rotated to the target angle.
+        const edges = [-22.5, -13.5, -4.5, 4.5, 13.5, 22.5];
+        const bandFor = [1, 3, 5, 3, 1];
+        let svg = '';
+        for (let i = 0; i < 5; i++) {
+            svg += `<path class="band-${bandFor[i]}" d="${wedgePath(edges[i], edges[i + 1], 196)}"/>`;
+        }
+        for (const e of edges.slice(1, -1)) {
+            const [x, y] = polar(e, 196);
+            svg += `<line class="band-line" x1="${CX}" y1="${CY}" x2="${x.toFixed(2)}" y2="${y.toFixed(2)}"/>`;
+        }
+        // Labels get counter-rotated in renderDial so they always read upright.
+        for (let i = 0; i < 5; i++) {
+            const mid = (edges[i] + edges[i + 1]) / 2;
+            const [x, y] = polar(mid, 160);
+            svg += `<text x="${x.toFixed(2)}" y="${y.toFixed(2)}">${bandFor[i]}</text>`;
+        }
+        targetG.innerHTML = svg;
+
+        // Shutter rays
+        let rays = '';
+        for (let a = -80; a <= 80; a += 10) {
+            const [x1, y1] = polar(a, 44);
+            const [x2, y2] = polar(a, 200);
+            rays += `<line x1="${x1.toFixed(2)}" y1="${y1.toFixed(2)}" x2="${x2.toFixed(2)}" y2="${y2.toFixed(2)}"/>`;
+        }
+        $('#shutterRays').innerHTML = rays;
+
+        // Tick marks
+        let ticks = '';
+        for (let a = -90; a <= 90; a += 10) {
+            const major = a % 45 === 0;
+            const [x1, y1] = polar(a, major ? 172 : 179);
+            const [x2, y2] = polar(a, 187);
+            ticks += `<line class="${major ? 'major' : ''}" x1="${x1.toFixed(2)}" y1="${y1.toFixed(2)}" x2="${x2.toFixed(2)}" y2="${y2.toFixed(2)}"/>`;
+        }
+        $('#ticks').innerHTML = ticks;
+    }
+
+    /* ======================================================================
+       Rendering
+       ====================================================================== */
+
+    let lastPhaseRendered = null;
+
+    function render() {
+        const team = currentTeam();
+        root.style.setProperty('--team', teamColor(team));
+        renderScoreboard();
+        renderTurn();
+        renderDial();
+        renderCard();
+        renderActions();
+        renderDeckBadge();
+        save();
+    }
+
+    function renderScoreboard() {
+        scoreboardEl.innerHTML = state.teams.map((t, i) => {
+            const shown = suspense && i === state.current ? t.score - (state.lastScore || 0) : t.score;
+            return `<button type="button" class="team-chip${i === state.current ? ' is-current' : ''}" style="--c:${teamColor(t)}" data-i="${i}" title="Edit teams">
+                <span class="dot"></span><span class="name">${esc(teamName(t, i))}</span><span class="pts">${shown}</span>
+            </button>`;
+        }).join('');
+    }
+
+    function renderTurn() {
+        const team = currentTeam();
+        const name = esc(teamName(team, state.current));
+        const noCards = playableCards().length === 0;
+        let eyebrow;
+        let title;
+        let hint;
+
+        if (state.phase === 'ready' && noCards) {
+            eyebrow = `Round ${state.round}`;
+            title = 'Your deck is empty';
+            hint = 'Add a few cards to start playing.';
+        } else if (state.phase === 'ready') {
+            eyebrow = `Round ${state.round} · ${name}`;
+            title = `Pass to ${name}'s psychic`;
+            hint = 'Everyone else, look away from the screen!';
+        } else if (state.phase === 'psychic') {
+            eyebrow = `${name} · Psychic`;
+            title = 'Give your team a clue';
+            hint = 'Say something that sits right on the target between the two ends.';
+        } else if (state.phase === 'guess') {
+            eyebrow = `${name} · Guessing`;
+            title = 'Where does the clue land?';
+            hint = 'Talk it over, then drag the needle to your guess.';
+        } else if (suspense) {
+            eyebrow = `${name} · Round ${state.round}`;
+            title = 'And the target is…';
+            hint = '&nbsp;';
+        } else {
+            const pts = state.lastScore || 0;
+            eyebrow = `${name} · Round ${state.round}`;
+            title = pts ? `<span class="hl">+${pts}</span> ${SCORE_TEXT[pts]}` : SCORE_TEXT[0];
+            hint = `${name} ${pts ? 'now has' : 'stays at'} ${plural(team.score, 'point')}.`;
+        }
+
+        turnEyebrow.innerHTML = eyebrow;
+        turnTitle.innerHTML = title;
+        turnHint.innerHTML = hint;
+
+        const key = `${state.phase}:${suspense}`;
+        if (key !== lastPhaseRendered) {
+            restartAnimation(turnEl, 'enter');
+            lastPhaseRendered = key;
         }
     }
-}
-// Initial status
-updateDebugStatus("Script loaded, DOM elements selected and clues parsed.");
 
-let teams = [];
-
-
-
-let currentTeamIndex = 0;
-let currentClueIndex = -1; // Initialize with an invalid index
-
-// Define team-specific colors
-const teamColors = [
-    { primary: '#4f8cff', secondary: '#7aa7ff' },   // Blue
-    { primary: '#ff6b9c', secondary: '#ff9ab8' },   // Pink
-    { primary: '#5cb85c', secondary: '#8cd68c' },   // Green
-    { primary: '#f0ad4e', secondary: '#f4c27a' },   // Orange
-    { primary: '#5bc0de', secondary: '#8cdff4' }    // Cyan
-];
-
-// Reference to the new current team indicator pill
-const currentTeamIndicator = document.getElementById("current-team-indicator");
-const currentTeamIndicatorIcon = currentTeamIndicator.querySelector(".team-indicator__icon");
-const currentTeamIndicatorLabel = currentTeamIndicator.querySelector(".team-indicator__label");
-const currentTeamIndicatorName = currentTeamIndicator.querySelector(".team-indicator__name");
-
-function updateCurrentTeamIndicator(phase) { // phase: "psychic", "guesser", "postGuess"
-    if (teams.length === 0) {
-        currentTeamIndicator.style.display = 'none';
-        return;
-    }
-    currentTeamIndicator.style.display = 'flex'; // Show the indicator
-
-    const team = teams[currentTeamIndex];
-    const teamColorClass = `team-color-${currentTeamIndex % teamColors.length}`;
-
-    // Clear previous team color classes
-    currentTeamIndicator.className = 'team-indicator';
-    currentTeamIndicator.classList.add(teamColorClass);
-
-    // Apply CSS variables for dynamic glow
-    currentTeamIndicator.style.setProperty('--team-color-current-primary', teamColors[currentTeamIndex % teamColors.length].primary);
-
-    currentTeamIndicatorName.textContent = team.name;
-
-    if (phase === "psychic") {
-        currentTeamIndicatorIcon.textContent = '🔮'; // Psychic icon
-        currentTeamIndicatorLabel.textContent = 'Psychic Turn';
-        turnIndicator.textContent = "YOU ARE THE PSYCHIC"; // Set main turn indicator
-    } else if (phase === "guesser") {
-        currentTeamIndicatorIcon.textContent = '🤔'; // Guesser icon
-        currentTeamIndicatorLabel.textContent = 'Now Guessing';
-        turnIndicator.textContent = `You are now guessing for ${team.name}!`; // More descriptive for guesser
-    } else if (phase === "postGuess") {
-        currentTeamIndicatorIcon.textContent = '🏆'; // Award icon
-        currentTeamIndicatorLabel.textContent = 'Points Awarded';
-        turnIndicator.textContent = `Points awarded to ${team.name}! Nicely played!`; // Descriptive for post-guess
-    }
-}
-
-function updateScoreDisplay() {
-    let scoreHTML = `<div class="team-management-instructions">Click a team name to edit, or use buttons below.</div>`;
-    scoreHTML += teams.map((team, index) =>
-        `<div class="team-score-item ${index === currentTeamIndex ? 'current-team' : ''}" data-team-index="${index}">
-            <span class="team-name-display">${team.name}<span class="edit-icon">✏️</span></span> ⭐ ${team.score}
-            <button class="delete-team-button" data-team-index="${index}" ${teams.length === 1 ? 'disabled' : ''}>🗑️</button>
-        </div>`
-    ).join('');
-    scoreHTML += `<button id="addTeamButton">Add Team</button>`;
-    totalScoreElement.innerHTML = scoreHTML;
-
-    // Attach event listeners using delegation for dynamically created elements
-    totalScoreElement.querySelectorAll('.team-name-display').forEach(nameSpan => {
-        nameSpan.addEventListener('click', (event) => {
-            const index = parseInt(event.target.closest('.team-score-item').dataset.teamIndex);
-            const currentName = teams[index].name;
-            const input = document.createElement('input');
-            input.type = 'text';
-            input.value = currentName;
-            input.className = 'team-name-input-inline';
-            event.target.replaceWith(input);
-            input.focus();
-
-            const handleNameChange = () => {
-                const newName = input.value.trim();
-                if (newName && newName !== currentName) {
-                    teams[index].name = newName;
-                    saveGameState();
-                }
-                updateScoreDisplay(); // Re-render to show updated name or revert if empty
-            };
-
-            input.addEventListener('blur', handleNameChange);
-            input.addEventListener('keypress', (e) => {
-                if (e.key === 'Enter') {
-                    handleNameChange();
-                }
-            });
+    function renderDial() {
+        const { phase } = state;
+        const noCards = playableCards().length === 0;
+        dial.classList.toggle('is-open', phase === 'psychic' || phase === 'reveal');
+        dial.classList.toggle('no-needle', phase !== 'guess' && phase !== 'reveal');
+        dial.classList.toggle('can-drag', phase === 'guess');
+        dial.classList.toggle('is-ready', phase === 'ready' && !noCards);
+        dial.tabIndex = phase === 'guess' ? 0 : -1;
+        targetG.setAttribute('transform', `rotate(${state.target.toFixed(2)} ${CX} ${CY})`);
+        targetG.querySelectorAll('text').forEach((t) => {
+            t.setAttribute('transform', `rotate(${(-state.target).toFixed(2)} ${t.getAttribute('x')} ${t.getAttribute('y')})`);
         });
-    });
+        setNeedle(state.needle);
+        dialCta.hidden = phase !== 'ready' || noCards;
 
-    totalScoreElement.querySelectorAll('.delete-team-button').forEach(deleteButton => {
-        deleteButton.addEventListener('click', (event) => {
-            const indexToDelete = parseInt(event.target.dataset.teamIndex);
-            if (teams.length > 1) { // Ensure at least one team remains
-                teams.splice(indexToDelete, 1);
-                if (currentTeamIndex >= teams.length) {
-                    currentTeamIndex = 0; // Adjust currentTeamIndex if the current team was deleted or was the last one
+        const [a, b] = state.phase === 'ready' ? BRAND_COLORS : cardColors(state.card);
+        rimA.setAttribute('stop-color', a);
+        rimB.setAttribute('stop-color', b);
+        $('.hub-dot', dial).style.fill = teamColor(currentTeam());
+    }
+
+    function setNeedle(angle) {
+        needleG.setAttribute('transform', `rotate(${angle.toFixed(2)} ${CX} ${CY})`);
+        dial.setAttribute('aria-valuenow', Math.round(angle));
+    }
+
+    function renderCard() {
+        const down = state.phase === 'ready' || !state.card;
+        cardEl.classList.toggle('is-down', down);
+        if (state.card) {
+            const [a, b] = cardColors(state.card);
+            cardEl.style.setProperty('--card-a', a);
+            cardEl.style.setProperty('--card-b', b);
+            cardLeft.textContent = state.card[0];
+            cardRight.textContent = state.card[1];
+        }
+    }
+
+    function renderActions() {
+        const { phase } = state;
+        const noCards = playableCards().length === 0;
+        let html = '';
+
+        if (phase === 'ready' && noCards) {
+            html = `<button class="btn btn-primary btn-lg" data-act="open-deck">${icon('cards')} Open deck</button>`;
+        } else if (phase === 'ready') {
+            html = `<button class="btn btn-primary btn-lg" data-act="peek">${icon('eye')} Reveal target</button>`;
+        } else if (phase === 'psychic') {
+            html = `<button class="btn btn-secondary btn-lg" data-act="new-card">${icon('shuffle')} New card</button>
+                    <button class="btn btn-primary btn-lg" data-act="hide">${icon('eye-off')} Hide target</button>`;
+        } else if (phase === 'guess') {
+            html = `<button class="btn btn-primary btn-lg" data-act="reveal">${icon('target')} Lock in &amp; reveal</button>`;
+        } else {
+            const next = state.teams.length > 1
+                ? `Next: ${esc(teamName(state.teams[(state.current + 1) % state.teams.length], (state.current + 1) % state.teams.length))}`
+                : 'Next round';
+            html = `<button class="btn btn-primary btn-lg" data-act="next" ${suspense ? 'disabled' : ''}>${next} ${icon('arrow-right')}</button>`;
+        }
+        actionsEl.innerHTML = html;
+    }
+
+    function renderDeckBadge() {
+        deckBadge.textContent = playableCards().length;
+    }
+
+    /* ======================================================================
+       Game flow
+       ====================================================================== */
+
+    function startPsychicTurn() {
+        if (state.phase !== 'ready') return;
+        const card = drawCard();
+        if (!card) {
+            openDeck();
+            return;
+        }
+        state.card = card;
+        state.target = Math.random() * 180 - 90;
+        state.needle = 0;
+        state.lastScore = null;
+        state.phase = 'psychic';
+        render();
+    }
+
+    function newCard() {
+        if (state.phase !== 'psychic') return;
+        const card = drawCard(state.card);
+        if (!card) return;
+        state.card = card;
+        cardEl.classList.add('is-down');
+        setTimeout(render, 320);
+    }
+
+    function hideTarget() {
+        if (state.phase !== 'psychic') return;
+        state.phase = 'guess';
+        state.needle = 0;
+        render();
+        dial.focus({ preventScroll: true });
+    }
+
+    function revealTarget() {
+        if (state.phase !== 'guess') return;
+        const pts = scoreFor(state.needle, state.target);
+        state.lastScore = pts;
+        currentTeam().score += pts;
+        state.phase = 'reveal';
+        suspense = true;
+        render();
+
+        setTimeout(() => {
+            suspense = false;
+            render();
+            showPoints(pts);
+        }, 850);
+    }
+
+    function nextRound() {
+        if (state.phase !== 'reveal' || suspense) return;
+        state.current = (state.current + 1) % state.teams.length;
+        state.round += 1;
+        state.phase = 'ready';
+        state.card = null;
+        state.needle = 0;
+        state.lastScore = null;
+        render();
+    }
+
+    function newGame() {
+        state.teams.forEach((t) => { t.score = 0; });
+        state.current = 0;
+        state.round = 1;
+        state.phase = 'ready';
+        state.card = null;
+        state.needle = 0;
+        state.lastScore = null;
+        suspense = false;
+        render();
+    }
+
+    function showPoints(pts) {
+        floatPoints.textContent = pts ? `+${pts}` : '0';
+        floatPoints.style.color = SCORE_COLOR[pts];
+        restartAnimation(floatPoints, 'go');
+
+        const chip = scoreboardEl.querySelector('.team-chip.is-current');
+        if (chip && pts) restartAnimation(chip, 'bump');
+
+        if (pts === 0) {
+            restartAnimation(dialWrap, 'shake');
+            return;
+        }
+        if (typeof window.confetti !== 'function') return;
+
+        const rect = dialWrap.getBoundingClientRect();
+        const origin = { x: (rect.left + rect.width / 2) / innerWidth, y: (rect.top + rect.height * 0.55) / innerHeight };
+        const colors = [...cardColors(state.card), '#ffc94a', '#5ef0c4', '#ffffff'];
+
+        if (pts === 5) {
+            window.confetti({ particleCount: 140, spread: 100, startVelocity: 42, origin, colors, scalar: 1.1 });
+            setTimeout(() => {
+                window.confetti({ particleCount: 70, angle: 60, spread: 70, origin: { x: 0, y: 0.7 }, colors });
+                window.confetti({ particleCount: 70, angle: 120, spread: 70, origin: { x: 1, y: 0.7 }, colors });
+            }, 220);
+        } else if (pts === 3) {
+            window.confetti({ particleCount: 45, spread: 60, startVelocity: 30, origin, colors, scalar: 0.9 });
+        }
+    }
+
+    /* ======================================================================
+       Needle input
+       ====================================================================== */
+
+    let dragging = false;
+
+    function angleFromEvent(e) {
+        const rect = dial.getBoundingClientRect();
+        const s = rect.width / 400;
+        const cx = rect.left + CX * s;
+        const cy = rect.top + CY * s;
+        const dx = e.clientX - cx;
+        const dy = Math.max(cy - e.clientY, 0.0001);
+        return clamp((Math.atan2(dx, dy) * 180) / Math.PI, -90, 90);
+    }
+
+    function wireDial() {
+        dial.addEventListener('pointerdown', (e) => {
+            if (state.phase === 'ready') {
+                startPsychicTurn();
+                return;
+            }
+            if (state.phase !== 'guess') return;
+            e.preventDefault();
+            dragging = true;
+            dial.setPointerCapture(e.pointerId);
+            dial.classList.add('dragging');
+            state.needle = angleFromEvent(e);
+            setNeedle(state.needle);
+        });
+
+        dial.addEventListener('pointermove', (e) => {
+            if (!dragging) return;
+            state.needle = angleFromEvent(e);
+            setNeedle(state.needle);
+        });
+
+        const end = () => {
+            if (!dragging) return;
+            dragging = false;
+            dial.classList.remove('dragging');
+            save();
+        };
+        dial.addEventListener('pointerup', end);
+        dial.addEventListener('pointercancel', end);
+
+        dial.addEventListener('keydown', (e) => {
+            if (state.phase !== 'guess') return;
+            const step = e.shiftKey ? 5 : 1;
+            if (e.key === 'ArrowLeft' || e.key === 'ArrowDown') state.needle = clamp(state.needle - step, -90, 90);
+            else if (e.key === 'ArrowRight' || e.key === 'ArrowUp') state.needle = clamp(state.needle + step, -90, 90);
+            else if (e.key === 'Enter') { revealTarget(); return; }
+            else return;
+            e.preventDefault();
+            setNeedle(state.needle);
+            save();
+        });
+
+        dialCta.addEventListener('click', startPsychicTurn);
+    }
+
+    /* ======================================================================
+       Dialogs, confirm, toasts
+       ====================================================================== */
+
+    const dialogStack = [];
+
+    function openDialog(dlg) {
+        if (dlg.open) return;
+        dlg.showModal();
+        dialogStack.push(dlg);
+    }
+
+    function wireDialogs() {
+        document.querySelectorAll('dialog').forEach((dlg) => {
+            let downOnBackdrop = false;
+            dlg.addEventListener('pointerdown', (e) => { downOnBackdrop = e.target === dlg; });
+            dlg.addEventListener('click', (e) => {
+                if (e.target === dlg && downOnBackdrop) dlg.close();
+            });
+            dlg.addEventListener('close', () => {
+                const i = dialogStack.lastIndexOf(dlg);
+                if (i !== -1) dialogStack.splice(i, 1);
+                const host = dialogStack[dialogStack.length - 1] || document.body;
+                if (toastRegion.parentNode !== host) host.append(toastRegion);
+            });
+            dlg.querySelectorAll('[data-close]').forEach((btn) => btn.addEventListener('click', () => dlg.close()));
+        });
+    }
+
+    function confirmAsk({ title, message, ok = 'OK', danger = false }) {
+        const dlg = $('#confirmDialog');
+        const okBtn = $('#confirmOk');
+        $('#confirmTitle').textContent = title;
+        $('#confirmMessage').textContent = message;
+        okBtn.textContent = ok;
+        okBtn.classList.toggle('btn-danger-solid', danger);
+        dlg.returnValue = '';
+        return new Promise((resolve) => {
+            dlg.addEventListener('close', () => resolve(dlg.returnValue === 'ok'), { once: true });
+            openDialog(dlg);
+            okBtn.focus();
+        });
+    }
+
+    function toast(message, { action, onAction, duration = 3500 } = {}) {
+        // Dialogs live in the top layer, so toasts must be inside the topmost one to be visible.
+        const host = dialogStack[dialogStack.length - 1] || document.body;
+        if (toastRegion.parentNode !== host) host.append(toastRegion);
+
+        const el = document.createElement('div');
+        el.className = 'toast';
+        const text = document.createElement('span');
+        text.textContent = message;
+        el.append(text);
+
+        let timer;
+        const dismiss = () => {
+            clearTimeout(timer);
+            el.classList.add('out');
+            el.addEventListener('animationend', () => el.remove(), { once: true });
+        };
+
+        if (action) {
+            const btn = document.createElement('button');
+            btn.type = 'button';
+            btn.textContent = action;
+            btn.addEventListener('click', () => { onAction?.(); dismiss(); });
+            el.append(btn);
+        }
+
+        toastRegion.append(el);
+        while (toastRegion.children.length > 3) toastRegion.firstElementChild.remove();
+        timer = setTimeout(dismiss, duration);
+    }
+
+    /* ======================================================================
+       Teams dialog
+       ====================================================================== */
+
+    const teamsDialog = $('#teamsDialog');
+    const teamList = $('#teamList');
+    const addTeamBtn = $('#addTeamBtn');
+
+    function openTeams() {
+        renderTeams();
+        openDialog(teamsDialog);
+    }
+
+    function renderTeams() {
+        teamList.innerHTML = state.teams.map((t, i) => `
+            <li class="team-row${i === state.current ? ' is-current' : ''}" style="--c:${teamColor(t)}" data-i="${i}">
+                <button type="button" class="team-swatch" data-act="color" title="Change color" aria-label="Change team color"></button>
+                <input type="text" value="${esc(t.name)}" placeholder="Team ${i + 1}" maxlength="24" aria-label="Team name" data-act="name" />
+                <div class="stepper">
+                    <button type="button" class="icon-btn" data-act="minus" aria-label="Remove a point">${icon('minus')}</button>
+                    <output>${t.score}</output>
+                    <button type="button" class="icon-btn" data-act="plus" aria-label="Add a point">${icon('plus')}</button>
+                </div>
+                <button type="button" class="icon-btn danger" data-act="delete" aria-label="Remove team" ${state.teams.length === 1 ? 'disabled' : ''}>${icon('trash')}</button>
+            </li>`).join('');
+        addTeamBtn.disabled = state.teams.length >= MAX_TEAMS;
+    }
+
+    function wireTeams() {
+        teamList.addEventListener('input', (e) => {
+            const row = e.target.closest('.team-row');
+            if (!row || e.target.dataset.act !== 'name') return;
+            state.teams[Number(row.dataset.i)].name = e.target.value.slice(0, 24);
+            render();
+        });
+
+        teamList.addEventListener('click', (e) => {
+            const btn = e.target.closest('button[data-act]');
+            const row = e.target.closest('.team-row');
+            if (!btn || !row) return;
+            const i = Number(row.dataset.i);
+            const team = state.teams[i];
+
+            switch (btn.dataset.act) {
+                case 'plus':
+                    team.score += 1;
+                    break;
+                case 'minus':
+                    team.score -= 1;
+                    break;
+                case 'color': {
+                    const used = new Set(state.teams.map((t) => t.color));
+                    let next = team.color;
+                    for (let k = 1; k <= TEAM_COLORS.length; k++) {
+                        const c = (team.color + k) % TEAM_COLORS.length;
+                        if (!used.has(c) || k === TEAM_COLORS.length) { next = c; break; }
+                    }
+                    team.color = next;
+                    break;
                 }
-                saveGameState();
-                updateScoreDisplay();
+                case 'delete': {
+                    if (state.teams.length <= 1) return;
+                    const [removed] = state.teams.splice(i, 1);
+                    const wasCurrent = state.current;
+                    if (state.current > i || state.current >= state.teams.length) state.current = Math.max(0, state.current - 1);
+                    toast(`Removed ${teamName(removed, i)}`, {
+                        action: 'Undo',
+                        onAction: () => {
+                            if (state.teams.length >= MAX_TEAMS) return;
+                            state.teams.splice(i, 0, removed);
+                            state.current = wasCurrent;
+                            render();
+                            renderTeams();
+                        },
+                    });
+                    break;
+                }
+                default:
+                    return;
+            }
+            render();
+            renderTeams();
+        });
+
+        addTeamBtn.addEventListener('click', () => {
+            if (state.teams.length >= MAX_TEAMS) return;
+            const used = new Set(state.teams.map((t) => t.color));
+            const color = [...TEAM_COLORS.keys()].find((c) => !used.has(c)) ?? state.teams.length % TEAM_COLORS.length;
+            state.teams.push({ name: `Team ${state.teams.length + 1}`, score: 0, color });
+            render();
+            renderTeams();
+            const inputs = teamList.querySelectorAll('input');
+            inputs[inputs.length - 1]?.select();
+        });
+
+        $('#resetScoresBtn').addEventListener('click', async () => {
+            const ok = await confirmAsk({ title: 'Reset scores?', message: 'Every team goes back to 0 points.', ok: 'Reset', danger: true });
+            if (!ok) return;
+            state.teams.forEach((t) => { t.score = 0; });
+            render();
+            renderTeams();
+        });
+    }
+
+    /* ======================================================================
+       Deck editor
+       ====================================================================== */
+
+    const deckDialog = $('#deckDialog');
+    const deckList = $('#deckList');
+    const deckEmpty = $('#deckEmpty');
+    const deckSearch = $('#deckSearch');
+    const deckSummary = $('#deckSummary');
+
+    function openDeck() {
+        deckSearch.value = '';
+        renderDeckList();
+        openDialog(deckDialog);
+    }
+
+    function renderDeckSummary() {
+        const playable = deck.filter(isPlayable).length;
+        const incomplete = deck.filter((c) => !isPlayable(c) && (c.left.trim() || c.right.trim())).length;
+        let text = `${plural(playable, 'card')} · ${deckIsCustom ? 'Your custom deck' : 'Default deck'}`;
+        if (incomplete) text += ` · ${incomplete} incomplete (skipped in play)`;
+        deckSummary.textContent = text;
+        renderDeckBadge();
+    }
+
+    function deckRowHtml(c, isNew = false) {
+        const incomplete = !isPlayable(c);
+        return `<li class="deck-row${incomplete ? ' is-incomplete' : ''}${isNew ? ' is-new' : ''}" data-id="${c.id}">
+            <input type="text" data-side="left" value="${esc(c.left)}" placeholder="Left end" maxlength="${MAX_CARD_LEN}" aria-label="Left end" />
+            <span class="arrow" aria-hidden="true">${icon('arrows')}</span>
+            <input type="text" data-side="right" value="${esc(c.right)}" placeholder="Right end" maxlength="${MAX_CARD_LEN}" aria-label="Right end" />
+            <button type="button" class="icon-btn danger" data-act="delete" aria-label="Delete card">${icon('trash')}</button>
+        </li>`;
+    }
+
+    function renderDeckList({ newId } = {}) {
+        const q = deckSearch.value.trim().toLowerCase();
+        const items = q ? deck.filter((c) => `${c.left} ${c.right}`.toLowerCase().includes(q)) : deck;
+        deckList.innerHTML = items.map((c) => deckRowHtml(c, c.id === newId)).join('');
+
+        deckEmpty.hidden = items.length > 0;
+        if (!items.length) {
+            deckEmpty.innerHTML = q
+                ? `<strong>No matches</strong>No cards contain "${esc(deckSearch.value.trim())}".`
+                : '<strong>No cards yet</strong>Add a card, import a deck, or restore the default deck.';
+        }
+        renderDeckSummary();
+    }
+
+    // Blank cards are never written to storage, so this only tidies the in-memory list.
+    function pruneEmptyCards() {
+        deck = deck.filter((c) => c.left.trim() || c.right.trim());
+    }
+
+    function exportDeck() {
+        const cards = playableCards();
+        if (!cards.length) {
+            toast('Nothing to export yet');
+            return;
+        }
+        const data = {
+            name: 'Wavelength deck',
+            exported: new Date().toISOString(),
+            count: cards.length,
+            cards,
+        };
+        const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `wavelength-deck-${new Date().toISOString().slice(0, 10)}.json`;
+        document.body.append(a);
+        a.click();
+        a.remove();
+        setTimeout(() => URL.revokeObjectURL(url), 1000);
+        toast(`Exported ${plural(cards.length, 'card')}`);
+    }
+
+    function wireDeck() {
+        deckSearch.addEventListener('input', debounce(() => renderDeckList(), 120));
+
+        deckList.addEventListener('input', (e) => {
+            const input = e.target;
+            const row = input.closest('.deck-row');
+            if (!row || !input.dataset.side) return;
+            const card = deck.find((c) => c.id === Number(row.dataset.id));
+            if (!card) return;
+            card[input.dataset.side] = input.value;
+            row.classList.toggle('is-incomplete', !isPlayable(card));
+            saveDeckSoon();
+            renderDeckSummary();
+        });
+
+        // Enter in the left box jumps to the right box; Enter in the right box adds a new card.
+        deckList.addEventListener('keydown', (e) => {
+            if (e.key !== 'Enter') return;
+            const input = e.target;
+            const row = input.closest('.deck-row');
+            if (!row) return;
+            e.preventDefault();
+            if (input.dataset.side === 'left') row.querySelector('[data-side="right"]').focus();
+            else addCard();
+        });
+
+        deckList.addEventListener('click', (e) => {
+            const btn = e.target.closest('[data-act="delete"]');
+            if (!btn) return;
+            const row = btn.closest('.deck-row');
+            const index = deck.findIndex((c) => c.id === Number(row.dataset.id));
+            if (index === -1) return;
+            const [removed] = deck.splice(index, 1);
+            row.remove();
+            saveDeck();
+            renderDeckSummary();
+            if (!deckList.children.length) renderDeckList();
+            if (removed.left.trim() || removed.right.trim()) {
+                toast('Card deleted', {
+                    action: 'Undo',
+                    onAction: () => {
+                        deck.splice(Math.min(index, deck.length), 0, removed);
+                        saveDeck();
+                        renderDeckList();
+                    },
+                });
             }
         });
-    });
 
-    const addTeamButton = document.getElementById('addTeamButton');
-    if (addTeamButton) {
-        addTeamButton.addEventListener('click', () => {
-            console.log("IN add team")
-            const newTeamNumber = teams.length + 1;
-            teams.push({ name: `Team ${newTeamNumber}`, score: 0 });
-            saveGameState();
-            updateScoreDisplay();
+        $('#addCardBtn').addEventListener('click', addCard);
+        $('#exportBtn').addEventListener('click', exportDeck);
+        $('#importBtn').addEventListener('click', openImport);
+
+        $('#resetDeckBtn').addEventListener('click', async () => {
+            const ok = await confirmAsk({
+                title: 'Restore the default deck?',
+                message: `This replaces your current deck with the ${defaultDeck.length} built-in cards. Export first if you want to keep your cards.`,
+                ok: 'Restore',
+                danger: true,
+            });
+            if (!ok) return;
+            deck = defaultDeck.map(makeItem);
+            deckIsCustom = false;
+            store.remove(KEYS.deck);
+            deckSearch.value = '';
+            renderDeckList();
+            toast('Default deck restored');
+        });
+
+        deckDialog.addEventListener('close', () => {
+            pruneEmptyCards();
+            render();
         });
     }
-}
 
-function saveGameState() {
-    const gameState = {
-        teams: teams,
-        currentTeamIndex: currentTeamIndex,
-        currentClueIndex: currentClueIndex,
-        targetAngle: targetAngle, // Save target angle
-        isTargetVisible: isTargetVisible, // Save target visibility state
-        isPostGuessPhase: isPostGuessPhase // Save post-guess phase state
-    };
-    localStorage.setItem('wavelengthGameState', JSON.stringify(gameState));
-}
+    function addCard() {
+        // If the top card is still blank, just focus it instead of stacking blanks.
+        const top = deck[0];
+        if (top && !top.left.trim() && !top.right.trim() && !deckSearch.value) {
+            deckList.querySelector('input')?.focus();
+            return;
+        }
+        const card = makeItem(['', '']);
+        deck.unshift(card);
+        deckSearch.value = '';
+        renderDeckList({ newId: card.id });
+        $('.deck-body', deckDialog).scrollTop = 0;
+        deckList.querySelector('input')?.focus();
+    }
 
-function loadGameState() {
-    const savedState = localStorage.getItem('wavelengthGameState');
-    if (savedState) {
+    /* ======================================================================
+       Import dialog
+       ====================================================================== */
+
+    const importDialog = $('#importDialog');
+    const importText = $('#importText');
+    const importFile = $('#importFile');
+    const importPreview = $('#importPreview');
+    const importAddBtn = $('#importAddBtn');
+    const importReplaceBtn = $('#importReplaceBtn');
+    const dropzone = $('#dropzone');
+    const dropzoneTitle = $('#dropzoneTitle');
+    const DROPZONE_DEFAULT = dropzoneTitle.innerHTML;
+
+    let pending = { cards: [], fresh: [] };
+
+    function openImport() {
+        importText.value = '';
+        importFile.value = '';
+        dropzoneTitle.innerHTML = DROPZONE_DEFAULT;
+        showImportPreview('');
+        openDialog(importDialog);
+    }
+
+    function showImportPreview(text) {
+        const result = parseCards(text);
+        const existing = deckKeys();
+        const fresh = result.cards.filter(([l, r]) => !existing.has(cardKey(l, r)));
+        pending = { cards: result.cards, fresh };
+
+        importAddBtn.disabled = fresh.length === 0;
+        importReplaceBtn.disabled = result.cards.length === 0;
+        importAddBtn.textContent = fresh.length ? `Add ${plural(fresh.length, 'card')}` : 'Add cards';
+
+        if (!text.trim()) {
+            importPreview.hidden = true;
+            return;
+        }
+        importPreview.hidden = false;
+        importPreview.classList.toggle('is-error', result.cards.length === 0);
+
+        if (!result.cards.length) {
+            importPreview.innerHTML = '<strong>No cards found</strong><ul><li>Use one card per line, like <em>Cold | Hot</em>, or an exported .json deck.</li></ul>';
+            return;
+        }
+
+        const already = result.cards.length - fresh.length;
+        const notes = [];
+        if (already) notes.push(`${already} already in your deck`);
+        if (result.skipped) notes.push(`${plural(result.skipped, 'line')} couldn't be read`);
+        const sample = (fresh.length ? fresh : result.cards).slice(0, 3)
+            .map(([l, r]) => `<li>${esc(l)} ↔ ${esc(r)}</li>`).join('');
+        const more = (fresh.length || result.cards.length) > 3 ? `<li>…and ${(fresh.length || result.cards.length) - 3} more</li>` : '';
+
+        importPreview.innerHTML = `<strong>${plural(result.cards.length, 'card')} found</strong>
+            ${fresh.length ? ` · ${fresh.length} new` : ''}${notes.length ? ` · ${notes.join(' · ')}` : ''}
+            <ul>${sample}${more}</ul>`;
+    }
+
+    async function loadImportFile(file) {
+        if (!file) return;
         try {
-            const loadedState = JSON.parse(savedState);
-            currentClueIndex = loadedState.currentClueIndex;
-            targetAngle = typeof loadedState.targetAngle !== 'undefined' ? loadedState.targetAngle : 0; // Load target angle
-            isTargetVisible = typeof loadedState.isTargetVisible !== 'undefined' ? loadedState.isTargetVisible : true;
-            isPostGuessPhase = typeof loadedState.isPostGuessPhase !== 'undefined' ? loadedState.isPostGuessPhase : false;
-            return loadedState;
-        } catch (e) {
-            console.error("Error parsing saved game state:", e);
-            return null;
-        }
-    }
-    return null;
-}
-
-// New function to completely reset the game
-function resetGame() {
-    teams.forEach(team => team.score = 0); // Reset scores only, preserve team names and count
-    currentTeamIndex = 0; // Reset current team to the first team
-    currentClueIndex = -1;
-    targetAngle = 0;
-    isPostGuessPhase = false;
-    isTargetVisible = true; // Psychic's view is visible, but hidden by overlay
-
-    updateScoreDisplay();
-    scoreElement.textContent = "";
-    showRevealOverlay();
-    saveGameState();
-    updateCurrentTeamIndicator("psychic"); // Update team indicator after reset
-}
-
-
-
-newGameButton.addEventListener("click", () => {
-
-    resetGame(); // Call the new reset function
-});
-
-skipQuestionButton.addEventListener("click", () => {
-    scoreElement.textContent = "";
-    currentClueIndex = -1; // Reset to get a new random clue next time
-    setPsychicView();
-    saveGameState(); // Added this line
-    updateCurrentTeamIndicator("psychic"); // Update the "Now Playing" pill for psychic turn
-});
-
-nextRoundButton.addEventListener("click", () => {
-    currentTeamIndex = (currentTeamIndex + 1) % teams.length;
-    updateScoreDisplay();
-    scoreElement.textContent = "";
-    currentClueIndex = -1; // Reset to get a new random clue next time
-    setPsychicView();
-    saveGameState(); // Added this line
-    // currentClueIndex = -1; // Removed redundant assignment
-    updateCurrentTeamIndicator("psychic");
-});
-
-toggleButton.addEventListener("click", () => {
-    isTargetVisible = !isTargetVisible;
-    if (isTargetVisible) {
-        // This is the "Reveal Target" action
-        const needleAngle = parseFloat(needle.style.transform.replace("rotate(", "").replace("deg)", "")) || 0;
-        const score = calculateScore(needleAngle);
-        teams[currentTeamIndex].score += score;
-        showPointsAnimation(score); // Call the new points animation function
-        scoreElement.textContent = `${teams[currentTeamIndex].name} scored ${score} points!`; // Explicit message
-        updateScoreDisplay();
-        if (score === 5) { // Confetti for bull's eye
-            triggerConfetti();
-        } else if (score === 0) { // Shake animation for 0 points
-            scoreElement.classList.add('shake-zero-points');
-            setTimeout(() => {
-                scoreElement.classList.remove('shake-zero-points');
-            }, 500); // Animation duration is 0.5s
-        }
-        
-        targetArea.style.display = "block";
-        toggleButton.style.display = "none";
-        skipQuestionButton.style.display = "none";
-        nextRoundButton.style.display = "inline-block";
-        turnIndicator.textContent = "Nicely played! Next round awaits!"; // More fun message
-        isPostGuessPhase = true; // Set flag for post-guess phase
-        saveGameState(); // Save state after score update
-        updateCurrentTeamIndicator("postGuess"); // Update the "Now Playing" pill for post-guess phase
-        canMoveNeedle = false;
-
-    } else {
-        // This is the "Hide Target" action
-        setGuesserView();
-        saveGameState(); // Persist the isTargetVisible = false state
-    }
-});
-
-// New: Function to show the "Tap to Reveal" overlay and hide game elements
-function showRevealOverlay() {
-    revealOverlay.style.display = 'flex'; // Ensure display is not 'none' for transition
-    revealOverlay.classList.add('active');
-    board.classList.add('highlight');
-    // Hide game elements that should be covered/reset
-    targetArea.style.display = "none";
-    document.getElementById("leftClue").textContent = ""; // Clear clues
-    document.getElementById("rightClue").textContent = "";
-    toggleButton.style.display = "none";
-    skipQuestionButton.style.display = "none";
-    nextRoundButton.style.display = "none";
-    scoreElement.textContent = "";
-    turnIndicator.textContent = "New Round Ready!";
-    gameContainer.classList.remove('psychic-turn');
-    hideNeedle();
-    canMoveNeedle = false;
-    psychicInfoBalloon.style.display = "none"; // Hide info balloon
-    saveGameState(); // Save state with overlay active
-}
-
-// New: Event listener for the "Tap to Reveal" overlay
-revealOverlay.addEventListener("click", () => {
-    revealOverlay.classList.remove('active'); // Start fade out
-    board.classList.remove('highlight');
-    setTimeout(() => {
-        revealOverlay.style.display = 'none'; // Hide completely after transition
-        setPsychicView(); // Transition to psychic view
-    }, 500); // Match CSS transition duration
-});
-
-
-
-
-// Hide game container initially
-// gameContainer.style.display = 'none'; // Removed - now managed by initializeGame()
-
-// Function to reconstruct UI based on loaded game state
-function reconstructGameUI(loadedState) {
-    // These global variables are already set by loadGameState() before calling this.
-    // currentClueIndex, targetAngle, isTargetVisible, isPostGuessPhase
-
-    // Always display clues and target area based on loaded state
-    displayClueForIndex(currentClueIndex);
-    setTargetArea(); // Use the loaded targetAngle to render the target area
-
-    if (loadedState.currentClueIndex === -1 && !loadedState.isPostGuessPhase) {
-        // This means it's a state where a new round has been started/reset
-        // but no clue/target has been set yet. So, show the overlay.
-        showRevealOverlay();
-        updateCurrentTeamIndicator("psychic");
-        canMoveNeedle = false; // Psychic cannot move needle initially
-    } else if (loadedState.isPostGuessPhase) {
-        // Post-guess phase
-        // Show current score, hide needle, show target area, show next round button
-        revealOverlay.classList.remove('active');
-        revealOverlay.style.display = 'none';
-        targetArea.style.display = "block";
-        toggleButton.style.display = "none";
-        skipQuestionButton.style.display = "none";
-        nextRoundButton.style.display = "inline-block";
-        gameContainer.classList.remove('psychic-turn');
-        hideNeedle();
-        canMoveNeedle = false;
-        psychicInfoBalloon.style.display = "none"; // Hide info balloon
-        updateCurrentTeamIndicator("postGuess");
-        // Re-calculate and display score based on loaded data if possible.
-        // Assuming currentAngle is still 0 after load, we re-use saved targetAngle.
-        // The previous needle angle is not saved, so we can't show "how close it was" accurately,
-        // just the score.
-        scoreElement.textContent = `${teams[currentTeamIndex].name} scored ${calculateScore(loadedState.targetAngle)} points!`;
-    } else if (!loadedState.isTargetVisible) { // Guesser's turn
-        // Hide target area, show needle, toggle button says "Reveal"
-        revealOverlay.classList.remove('active');
-        revealOverlay.style.display = 'none';
-        targetArea.style.display = "none";
-        toggleButton.textContent = "Reveal Target";
-        toggleButton.style.display = "inline-block";
-        scoreElement.textContent = "";
-        showNeedle();
-        skipQuestionButton.style.display = "none";
-        nextRoundButton.style.display = "none";
-        gameContainer.classList.remove('psychic-turn');
-        canMoveNeedle = true;
-        psychicInfoBalloon.style.display = "none"; // Hide info balloon
-        updateCurrentTeamIndicator("guesser");
-    } else { // Psychic's turn (target is visible)
-        // Show target area, hide needle, toggle button says "Hide"
-        revealOverlay.classList.remove('active');
-        revealOverlay.style.display = 'none';
-        targetArea.style.display = "block";
-        toggleButton.textContent = "Hide for Guessers";
-        toggleButton.style.display = "inline-block";
-        skipQuestionButton.style.display = "inline-block";
-        nextRoundButton.style.display = "none";
-        gameContainer.classList.add('psychic-turn');
-        needle.style.transform = "rotate(0deg)"; // Reset needle to center for psychic
-        hideNeedle();
-        canMoveNeedle = false;
-        psychicInfoBalloon.style.display = "block"; // Show info balloon
-        updateCurrentTeamIndicator("psychic");
-    }
-    // Ensure the toggleButton visibility is consistent with canMoveNeedle
-    if (canMoveNeedle) {
-        toggleButton.style.display = "inline-block";
-    }
-}
-
-// Consolidated Game Initialization Logic
-function initializeGame() {
-    const loadedState = loadGameState();
-
-    if (!loadedState) { // Completely fresh start, initialize with default teams
-        teams = [{ name: "Team 1", score: 0 }, { name: "Team 2", score: 0 }];
-        currentTeamIndex = 0;
-        
-        // Update with default teams
-        updateScoreDisplay();
-        
-        // Directly start a new game experience for fresh users
-        resetGame(); // Call resetGame to ensure exact new game state
-    } else { // Game state found
-        teams = loadedState.teams;
-        currentTeamIndex = loadedState.currentTeamIndex;
-        // Global variables (targetAngle, isTargetVisible, isPostGuessPhase, currentClueIndex)
-        // are set by loadGameState()
-        updateScoreDisplay(); // Update with loaded teams
-        reconstructGameUI(loadedState); // Reconstruct the UI based on the loaded state
-    }
-}
-
-document.addEventListener("DOMContentLoaded", () => {
-    // MODAL AND BUTTON INITIALIZATION MOVED HERE
-    const modal = document.getElementById("howToPlayModal");
-    const howToPlayButton = document.getElementById("howToPlayButton");
-    const closeButton = modal.querySelector(".close-button");
-
-    const changeLogModal = document.getElementById("changeLogModal");
-    const changeLogCloseButton = changeLogModal.querySelector(".close-button");
-
-    changeLogCloseButton.onclick = function () {
-        changeLogModal.classList.remove("show");
-        setTimeout(() => changeLogModal.style.display = "none", 300);
-    };
-
-    howToPlayButton.onclick = function () {
-        modal.style.display = "block";
-        setTimeout(() => modal.classList.add("show"), 10);
-    };
-
-    closeButton.onclick = function () {
-        modal.classList.remove("show");
-        setTimeout(() => modal.style.display = "none", 300);
-    };
-
-    window.onclick = function (event) {
-
-        if (event.target == changeLogModal) {
-            changeLogModal.classList.remove("show");
-            setTimeout(() => changeLogModal.style.display = "none", 300);
+            const text = await file.text();
+            importText.value = '';
+            dropzoneTitle.textContent = file.name;
+            showImportPreview(text);
+        } catch {
+            toast("Couldn't read that file");
         }
     }
 
-    // Mouse events
-    board.addEventListener("mousedown", handleStart);
-    document.addEventListener("mousemove", handleMove);
-    document.addEventListener("mouseup", handleEnd);
+    function wireImport() {
+        importText.addEventListener('input', debounce(() => {
+            importFile.value = '';
+            dropzoneTitle.innerHTML = DROPZONE_DEFAULT;
+            showImportPreview(importText.value);
+        }, 150));
 
-    // Touch events
-    board.addEventListener("touchstart", handleStart);
-    document.addEventListener("touchmove", handleMove, { passive: false });
-    document.addEventListener("touchend", handleEnd);
+        importFile.addEventListener('change', () => loadImportFile(importFile.files[0]));
 
-    initializeGame(); // This was already here
-});
+        dropzone.addEventListener('dragover', (e) => { e.preventDefault(); dropzone.classList.add('over'); });
+        dropzone.addEventListener('dragleave', () => dropzone.classList.remove('over'));
+        dropzone.addEventListener('drop', (e) => {
+            e.preventDefault();
+            dropzone.classList.remove('over');
+            loadImportFile(e.dataTransfer.files[0]);
+        });
+        // Don't let a stray drop navigate away from the game.
+        window.addEventListener('dragover', (e) => { if (importDialog.open) e.preventDefault(); });
+        window.addEventListener('drop', (e) => { if (importDialog.open) e.preventDefault(); });
 
+        importAddBtn.addEventListener('click', () => {
+            if (!pending.fresh.length) return;
+            const items = pending.fresh.map(makeItem);
+            deck = [...items, ...deck];
+            saveDeck();
+            importDialog.close();
+            deckSearch.value = '';
+            renderDeckList();
+            $('.deck-body', deckDialog).scrollTop = 0;
+            toast(`Added ${plural(items.length, 'card')}`);
+        });
 
-function setPsychicView() {
-    canMoveNeedle = false;
-    isPostGuessPhase = false; // Ensure this is false for a new psychic round
-    
-    if (currentClueIndex === -1) { // Only generate new if not reconstructing from saved state
-        initializeNewTargetArea();
-        setRandomClues();
-    } else {
-        // If reconstructing, ensure UI reflects current global targetAngle and currentClueIndex
-        setTargetArea(); // Re-apply target area based on global targetAngle
-        displayClueForIndex(currentClueIndex); // Re-display clues based on global currentClueIndex
-    }
-    
-    saveGameState(); // Save state after setting the clue
-    updateCurrentTeamIndicator("psychic"); // Update the "Now Playing" pill for psychic turn
-    
-    gameContainer.classList.add('psychic-turn');
-    turnIndicator.textContent = "YOU ARE THE PSYCHIC";
-    psychicInfoBalloon.style.display = "block"; // Show info balloon for psychic
-
-    targetArea.style.display = "block";
-    toggleButton.textContent = "Hide for Guessers";
-    toggleButton.style.display = "inline-block";
-    skipQuestionButton.style.display = "inline-block";
-    nextRoundButton.style.display = "none";
-    
-    needle.style.transform = "rotate(0deg)";
-    hideNeedle();
-}
-
-function setGuesserView() {
-    canMoveNeedle = true;
-    isPostGuessPhase = false; // Ensure this is false for the guesser phase
-    
-    gameContainer.classList.remove('psychic-turn');
-    turnIndicator.textContent = "GUESS THE WAVELENGTH!";
-    psychicInfoBalloon.style.display = "none"; // Hide info balloon for guesser
-
-    targetArea.style.display = "none";
-    toggleButton.textContent = "Reveal Target";
-    scoreElement.textContent = "";
-    showNeedle();
-    updateCurrentTeamIndicator("guesser"); // Update the "Now Playing" pill for guesser turn
-    skipQuestionButton.style.display = "none";
-    nextRoundButton.style.display = "none";
-}
-
-
-// Helper function to clamp angles for the gradient
-function clampAngle(angle) {
-    return Math.max(0, Math.min(180, angle));
-}
-
-function setTargetArea() {
-    const angle1 = clampAngle(targetAngle - 22.5 + 90);
-    const angle2 = clampAngle(targetAngle - 13.5 + 90);
-    const angle3 = clampAngle(targetAngle - 4.5 + 90);
-    const angle4 = clampAngle(targetAngle + 4.5 + 90);
-    const angle5 = clampAngle(targetAngle + 13.5 + 90);
-    const angle6 = clampAngle(targetAngle + 22.5 + 90);
-
-    const gradient = `conic-gradient(
-                from -90deg at 50% 100%,
-                #a4b0be 0deg ${angle1}deg,
-                #ff6b6b ${angle1}deg ${angle2}deg,
-                #feca57 ${angle2}deg ${angle3}deg,
-                #48dbfb ${angle3}deg ${angle4}deg,
-                #feca57 ${angle4}deg ${angle5}deg,
-                #ff6b6b ${angle5}deg ${angle6}deg,
-                #a4b0be ${angle6}deg 180deg
-            )`;
-    targetArea.style.background = gradient;
-}
-
-function initializeNewTargetArea() {
-    targetAngle = Math.random() * 180 - 90;
-    setTargetArea();
-}
-
-function setRandomClues() {
-    if (!clues || clues.length === 0) return;
-    currentClueIndex = Math.floor(Math.random() * clues.length); // Assign to global variable
-    displayClueForIndex(currentClueIndex);
-}
-
-function displayClueForIndex(index) {
-    if (!clues || clues.length === 0 || index < 0 || index >= clues.length) return;
-    const [left, right] = clues[index];
-    document.getElementById("leftClue").textContent = left;
-    document.getElementById("rightClue").textContent = right;
-}
-
-function calculateScore(angle) {
-    const diff = Math.abs(angle - targetAngle);
-    if (diff <= 4.5) return 5;
-    if (diff <= 13.5) return 3;
-    if (diff <= 22.5) return 1;
-    return 0;
-}
-
-function handleStart(e) {
-    if (!canMoveNeedle) return;
-    isDragging = true;
-    e.preventDefault(); // Prevent default touch behavior
-}
-
-function triggerConfetti() {
-    confetti({
-        particleCount: 150,
-        spread: 90,
-        origin: { y: 0.6 },
-        colors: ['#ff0000', '#00ff00', '#0000ff'], // Custom colors
-        ticks: 200, // How long the animation lasts
-        shapes: ['square'], // Use only square confetti
-        gravity: 0.8, // Slightly increase gravity
-        scalar: 1.2 // Make the confetti a bit larger
-    });
-}
-
-function showPointsAnimation(score) {
-    if (score === 0) return; // No animation for 0 points
-
-    const boardRect = board.getBoundingClientRect(); // Get the semi-circle's position relative to viewport
-    const gameContainerRect = gameContainer.getBoundingClientRect(); // Get gameContainer's position relative to viewport
-
-    const numberOfPopups = score * 3; // More popups for higher scores, e.g., 5 points = 15 popups
-
-    for (let i = 0; i < numberOfPopups; i++) {
-        const scorePopup = document.createElement('div');
-        scorePopup.textContent = `+${score}`;
-        scorePopup.classList.add('score-popup');
-
-        // Randomize initial position within the board's area, emanating roughly from its top half
-        // Positions are relative to gameContainer's top-left corner
-        const randomLeft = Math.random() * (boardRect.width * 0.8) + (boardRect.width * 0.1); // 10%-90% of board width
-        const randomTop = Math.random() * (boardRect.height * 0.7); // Top 70% of the board height
-
-        scorePopup.style.left = `${boardRect.left - gameContainerRect.left + randomLeft}px`;
-        scorePopup.style.top = `${boardRect.top - gameContainerRect.top + randomTop}px`;
-
-        // Apply random delay for a staggered effect
-        scorePopup.style.animationDelay = `${Math.random() * 0.8}s`; // 0 to 0.8 seconds delay
-
-        gameContainer.appendChild(scorePopup);
-
-        scorePopup.addEventListener('animationend', () => {
-            scorePopup.remove();
+        importReplaceBtn.addEventListener('click', async () => {
+            if (!pending.cards.length) return;
+            const count = deck.filter(isPlayable).length;
+            const ok = await confirmAsk({
+                title: 'Replace your deck?',
+                message: `Your ${plural(count, 'card')} will be swapped for the ${plural(pending.cards.length, 'imported card')}.`,
+                ok: 'Replace',
+                danger: true,
+            });
+            if (!ok) return;
+            deck = pending.cards.map(makeItem);
+            saveDeck();
+            importDialog.close();
+            deckSearch.value = '';
+            renderDeckList();
+            toast(`Deck replaced with ${plural(deck.length, 'card')}`);
         });
     }
-}
 
-let currentNeedleAngle = 0; // New global variable to store the needle's current angle
+    /* ======================================================================
+       Wiring + init
+       ====================================================================== */
 
-// ... (rest of the file) ...
+    function wireMain() {
+        actionsEl.addEventListener('click', (e) => {
+            const btn = e.target.closest('[data-act]');
+            if (!btn || btn.disabled) return;
+            ({
+                peek: startPsychicTurn,
+                'new-card': newCard,
+                hide: hideTarget,
+                reveal: revealTarget,
+                next: nextRound,
+                'open-deck': openDeck,
+            })[btn.dataset.act]?.();
+        });
 
-function handleMove(e) {
-    if (!isDragging || !canMoveNeedle) return;
-    e.preventDefault(); // Prevent default touch behavior
-    const rect = needleContainer.getBoundingClientRect();
-    const centerX = rect.left + rect.width / 2;
-    const centerY = rect.bottom;
+        scoreboardEl.addEventListener('click', (e) => {
+            if (e.target.closest('.team-chip')) openTeams();
+        });
 
-    let clientX, clientY;
-    if (e.type === "touchmove") {
-        clientX = e.touches[0].clientX;
-        clientY = e.touches[0].clientY;
-    } else {
-        clientX = e.clientX;
-        clientY = e.clientY;
+        $('#deckBtn').addEventListener('click', openDeck);
+        $('#teamsBtn').addEventListener('click', openTeams);
+        $('#helpBtn').addEventListener('click', () => openDialog($('#helpDialog')));
+        $('#helpDialog').addEventListener('close', () => store.set(KEYS.seenHelp, true));
+        $('#newGameBtn').addEventListener('click', async () => {
+            const ok = await confirmAsk({
+                title: 'Start a new game?',
+                message: 'Scores go back to 0. Your teams and deck stay the same.',
+                ok: 'New game',
+            });
+            if (ok) newGame();
+        });
     }
 
-    const angle =
-        (Math.atan2(clientX - centerX, centerY - clientY) * 180) / Math.PI;
-    const clampedAngle = Math.max(-90, Math.min(90, angle));
-    currentNeedleAngle = clampedAngle; // Update global angle variable
-    requestAnimationFrame(updateNeedlePosition); // Request animation frame for smooth update
-}
+    async function init() {
+        document.body.classList.add('no-anim');
+        buildDial();
+        wireDialogs();
+        wireMain();
+        wireDial();
+        wireTeams();
+        wireDeck();
+        wireImport();
 
-function updateNeedlePosition() {
-    needle.style.transform = `rotate(${currentNeedleAngle}deg)`;
-}
+        state = loadState();
+        defaultDeck = await loadDefaultDeck();
+        deck = loadDeck();
+        render();
 
-function handleEnd() {
-    isDragging = false;
-}
+        requestAnimationFrame(() => requestAnimationFrame(() => document.body.classList.remove('no-anim')));
 
-function hideNeedle() {
-    needle.style.display = "none";
-}
+        if (!store.get(KEYS.seenHelp)) openDialog($('#helpDialog'));
+    }
 
-function showNeedle() {
-    needle.style.display = "block";
-}
+    init();
+})();

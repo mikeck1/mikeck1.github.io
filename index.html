@@ -3,24 +3,28 @@
 
 <head>
     <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+    <meta name="theme-color" content="#120e2e" />
     <title>Wavelength Game</title>
     <meta name="description" content="Play Wavelength, the popular social deduction party game, online for free! Guess where the target is on the spectrum between two opposing concepts. Perfect for friends and family." />
     <meta name="keywords" content="wavelength, board game, online game, party game, social deduction, free game, spectrum, guess, multiplayer" />
-    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;700&display=swap" rel="stylesheet" />
-    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@700&display=swap" rel="stylesheet" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@500;600;700&family=Nunito:wght@400;600;700;800&display=swap" rel="stylesheet" />
     <link rel="stylesheet" href="style.css" />
+
     <!-- Google tag (gtag.js) -->
     <script async src="https://www.googletagmanager.com/gtag/js?id=G-HZ0TQPSV7S"></script>
     <script>
         window.dataLayer = window.dataLayer || [];
         function gtag(){dataLayer.push(arguments);}
         gtag('js', new Date());
-
-        gtag('config', 'G-HZ0TQPSV7S');
+        // Skip analytics while developing locally
+        if (!/^(localhost|127\.0\.0\.1)$/.test(location.hostname)) {
+            gtag('config', 'G-HZ0TQPSV7S');
+        }
     </script>
 
-    <!-- ADD ADSENSE SCRIPT RIGHT HERE -->
     <script async
         src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-7738904226951665"
         crossorigin="anonymous">
@@ -28,127 +32,290 @@
 </head>
 
 <body>
+    <!-- Icon sprite -->
+    <svg width="0" height="0" style="position:absolute" aria-hidden="true">
+        <defs>
+            <symbol id="i-cards" viewBox="0 0 24 24"><rect x="2.5" y="5.5" width="12" height="16" rx="2.2" transform="rotate(-10 8.5 13.5)"/><rect x="9.5" y="2.5" width="12" height="16" rx="2.2" transform="rotate(8 15.5 10.5)"/></symbol>
+            <symbol id="i-users" viewBox="0 0 24 24"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></symbol>
+            <symbol id="i-help" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/><path d="M12 17h.01"/></symbol>
+            <symbol id="i-restart" viewBox="0 0 24 24"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/></symbol>
+            <symbol id="i-x" viewBox="0 0 24 24"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></symbol>
+            <symbol id="i-plus" viewBox="0 0 24 24"><path d="M5 12h14"/><path d="M12 5v14"/></symbol>
+            <symbol id="i-minus" viewBox="0 0 24 24"><path d="M5 12h14"/></symbol>
+            <symbol id="i-trash" viewBox="0 0 24 24"><path d="M3 6h18"/><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"/><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"/></symbol>
+            <symbol id="i-download" viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><path d="m7 10 5 5 5-5"/><path d="M12 15V3"/></symbol>
+            <symbol id="i-upload" viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><path d="m17 8-5-5-5 5"/><path d="M12 3v12"/></symbol>
+            <symbol id="i-search" viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></symbol>
+            <symbol id="i-shuffle" viewBox="0 0 24 24"><path d="M2 18h1.4c1.3 0 2.5-.6 3.3-1.7l6.1-8.6c.7-1.1 2-1.7 3.3-1.7H22"/><path d="m18 2 4 4-4 4"/><path d="M2 6h1.9c1.5 0 2.9.9 3.6 2.2"/><path d="M22 18h-5.9c-1.3 0-2.6-.7-3.3-1.8l-.5-.8"/><path d="m18 14 4 4-4 4"/></symbol>
+            <symbol id="i-eye" viewBox="0 0 24 24"><path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7Z"/><circle cx="12" cy="12" r="3"/></symbol>
+            <symbol id="i-eye-off" viewBox="0 0 24 24"><path d="M9.88 9.88a3 3 0 1 0 4.24 4.24"/><path d="M10.73 5.08A10.43 10.43 0 0 1 12 5c7 0 10 7 10 7a13.16 13.16 0 0 1-1.67 2.68"/><path d="M6.61 6.61A13.53 13.53 0 0 0 2 12s3 7 10 7a9.74 9.74 0 0 0 5.39-1.61"/><path d="M2 2l20 20"/></symbol>
+            <symbol id="i-arrow-right" viewBox="0 0 24 24"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></symbol>
+            <symbol id="i-arrows" viewBox="0 0 24 24"><path d="M8 7 3 12l5 5"/><path d="m16 7 5 5-5 5"/><path d="M3 12h18"/></symbol>
+            <symbol id="i-target" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="6"/><circle cx="12" cy="12" r="2"/></symbol>
+            <symbol id="i-file" viewBox="0 0 24 24"><path d="M14.5 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7.5L14.5 2z"/><path d="M14 2v6h6"/></symbol>
+            <symbol id="i-wave" viewBox="0 0 24 24"><path d="M2 12c2-5 4-5 6 0s4 5 6 0 4-5 6 0"/></symbol>
+        </defs>
+    </svg>
 
-    <div id="howToPlayModal" class="modal">
-            <div class="modal-content">
-                <h2>How to Play Wavelength</h2>
-                <div class="modal-body">
-                    <ol>
-                        <li>A pair of opposing concepts will be displayed.</li>
-                        <li>The Psychic gives a clue where the target is located
-                            ON THE SPECTRUM between the two concepts</li>
-                        <ul>
-                            <li>For example between HOT and COLD</li>
-                            <li>The Psychic can say something like COFFEE!</li>
-                        </ul>
-                        <li>Now it’s up to the Psychic’s team to discuss the
-                            clue and decide where to turn the dial</li>
-                        <li>Click and drag the needle to set your guess.</li>
-                        <li>Click "Hide Target" to lock in your guess.</li>
-                        <li>Click "Reveal Target" to see how close you were.</li>
-                        <li>Scoring:
-                            <ul>
-                                <li><span class="score-5">5 points:</span> Bull's eye (dark blue)</li>
-                                <li><span class="score-3">3 points:</span> Close (yellow)</li>
-                                <li><span class="score-1">1 point:</span> Near (red)</li>
-                                <li><span class="score-0">0 points:</span> Miss</li>
-                            </ul>
-                        </li>
-                        <li>Click "Next Round" to continue or "New Game" to start over.</li>
-                    </ol>
+    <div class="app">
+        <header class="topbar">
+            <a class="brand" href="/" aria-label="Wavelength home">
+                <span class="brand-mark"><svg class="i"><use href="#i-wave"/></svg></span>
+                <span class="brand-name">Wavelength</span>
+            </a>
+            <nav class="topbar-actions" aria-label="Game menu">
+                <button class="tb-btn" id="deckBtn" type="button" title="Edit the card deck">
+                    <svg class="i"><use href="#i-cards"/></svg>
+                    <span class="tb-label">Deck</span>
+                    <span class="tb-badge" id="deckBadge">0</span>
+                </button>
+                <button class="tb-btn" id="teamsBtn" type="button" title="Edit teams">
+                    <svg class="i"><use href="#i-users"/></svg>
+                    <span class="tb-label">Teams</span>
+                </button>
+                <button class="tb-btn" id="helpBtn" type="button" title="How to play" aria-label="How to play">
+                    <svg class="i"><use href="#i-help"/></svg>
+                </button>
+                <button class="tb-btn" id="newGameBtn" type="button" title="Start a new game" aria-label="New game">
+                    <svg class="i"><use href="#i-restart"/></svg>
+                </button>
+            </nav>
+        </header>
+
+        <main class="stage">
+            <section class="scoreboard" id="scoreboard" aria-label="Scores"></section>
+
+            <section class="turn" id="turn" aria-live="polite">
+                <div class="turn-eyebrow" id="turnEyebrow"></div>
+                <h1 class="turn-title" id="turnTitle"></h1>
+                <p class="turn-hint" id="turnHint"></p>
+            </section>
+
+            <section class="dial-wrap" id="dialWrap">
+                <svg class="dial" id="dial" viewBox="0 0 400 220" role="slider" tabindex="-1"
+                     aria-label="Guess dial" aria-valuemin="-90" aria-valuemax="90" aria-valuenow="0">
+                    <defs>
+                        <clipPath id="dialClip"><path d="M 8 200 A 192 192 0 0 1 392 200 Z"/></clipPath>
+                        <radialGradient id="faceGrad" cx="200" cy="200" r="192" gradientUnits="userSpaceOnUse">
+                            <stop offset="0" stop-color="#2a2268"/>
+                            <stop offset="1" stop-color="#16123d"/>
+                        </radialGradient>
+                        <linearGradient id="shutterGrad" x1="0" y1="0" x2="0" y2="1">
+                            <stop offset="0" stop-color="#5a46d6"/>
+                            <stop offset="1" stop-color="#2f2491"/>
+                        </linearGradient>
+                        <linearGradient id="rimGrad" x1="0" y1="0" x2="1" y2="0">
+                            <stop id="rimA" offset="0" stop-color="#ff5d8f"/>
+                            <stop id="rimB" offset="1" stop-color="#7c5cff"/>
+                        </linearGradient>
+                    </defs>
+
+                    <g clip-path="url(#dialClip)">
+                        <path class="dial-face" d="M 8 200 A 192 192 0 0 1 392 200 Z" fill="url(#faceGrad)"/>
+                        <g class="dial-rings">
+                            <path d="M 80 200 A 120 120 0 0 1 320 200"/>
+                            <path d="M 140 200 A 60 60 0 0 1 260 200"/>
+                        </g>
+                        <g id="target" class="target"></g>
+                        <g id="shutter" class="shutter">
+                            <path d="M 4 200 A 196 196 0 0 1 396 200 Z" fill="url(#shutterGrad)"/>
+                            <g id="shutterRays" class="shutter-rays"></g>
+                            <path class="shutter-edge" d="M 4 200 A 196 196 0 0 1 396 200"/>
+                        </g>
+                    </g>
+
+                    <path class="dial-rim" d="M 6 200 A 194 194 0 0 1 394 200" stroke="url(#rimGrad)"/>
+                    <g id="ticks" class="ticks"></g>
+                    <rect class="dial-base" x="0" y="199" width="400" height="14" rx="7"/>
+
+                    <g id="needle" class="needle">
+                        <line class="needle-glow" x1="200" y1="200" x2="200" y2="30"/>
+                        <line class="needle-core" x1="200" y1="200" x2="200" y2="30"/>
+                        <circle cx="200" cy="30" r="7"/>
+                    </g>
+                    <circle class="hub" cx="200" cy="200" r="17"/>
+                    <circle class="hub-dot" cx="200" cy="200" r="7"/>
+                </svg>
+
+                <button class="dial-cta" id="dialCta" type="button">
+                    <svg class="i"><use href="#i-eye"/></svg>
+                    <span>Psychic: tap to peek</span>
+                </button>
+                <div class="float-points" id="floatPoints" aria-hidden="true"></div>
+            </section>
+
+            <section class="card" id="card" aria-live="polite">
+                <div class="card-inner">
+                    <div class="card-face card-front" id="cardFront">
+                        <span class="card-side card-left" id="cardLeft"></span>
+                        <span class="card-mid"><svg class="i"><use href="#i-arrows"/></svg></span>
+                        <span class="card-side card-right" id="cardRight"></span>
+                    </div>
+                    <div class="card-face card-back">
+                        <svg class="i"><use href="#i-wave"/></svg>
+                        <span>Next card</span>
+                    </div>
                 </div>
-                <button class="close-button">Got it!</button>
-            </div>
-        </div>
+            </section>
 
-    <div class="game-container">
-        <h1 class="title">Wavelength</h1>
-        <div id="topRightButtons">
-            <!-- NEW CHANGE LOG BUTTON -->
-            <button id="howToPlayButton" class="how-to-play">How to Play</button>
-            <button id="newGameButton" style="background-color: red; color: white">
-                New Game
-            </button>
-        </div>
-        <!-- NEW CHANGE LOG MODAL -->
-        <div id="changeLogModal" class="modal">
-            <div class="modal-content">
-                <h2>Wavelength Updates!</h2>
-                <div class="modal-body">
-                    <p>Recent changes include:</p>
-                    <ul>
-                        <li>Offline mode support and game state persistence on refresh.</li>
-                        <li>Various UX improvements for a smoother experience.</li>
-                        <li>Better touch screen support, especially for needle interaction.</li>
-                        <li>Improved layout and consistency across devices.</li>
-                    </ul>
-                    <p>Thank you to all the folks using this app around the world! I made this app to play Wavelength with my nieces while traveling around Europe in 2024 and am so excited to share it with everyone. I love hearing everyone's stories on using it. Enjoy!</p>
-                </div>
-                <button class="close-button">Awesome!</button>
-            </div>
-        </div>
-        <!-- Current Team Indicator -->
-        <div id="current-team-indicator" class="team-indicator">
-            <span class="team-indicator__icon"></span>
-            <span class="team-indicator__label"></span>
-            <span class="team-indicator__name"></span>
-        </div>
-        <h2 id="turn-indicator"></h2>
-        <div id="psychic-info-balloon" class="info-balloon">
-            <p>Think of a word to clue the spectrum. Then, 'Hide for Guessers'.</p>
-        </div>
-        <div id="score"></div> <!-- MOVED HERE -->
+            <section class="actions" id="actions"></section>
+        </main>
 
-        <div id="gameBoardAndCluesContainer">
-            <div class="board">
-                <div class="target-area" id="targetArea"></div>
-                <div class="needle-container" id="needleContainer">
-                    <div class="needle" id="needle"></div>
-                </div>
-            </div>
-            <div class="clues-container">
-                <div class="clue" id="leftClue"></div>
-                <div class="bidirectional-arrow"></div>
-                <div class="clue" id="rightClue"></div>
-            </div>
-            <div id="revealOverlay" class="reveal-overlay">
-                <p>Tap to show wavelength and start the game</p>
-            </div>
-        </div>
-
-        <div class="controls">
-            <button id="toggleButton">Hide Target</button>
-            <button id="skipQuestionButton" style="display: none;">Skip Question</button> <!-- NEW BUTTON -->
-            <button id="nextRoundButton" style="display: none;">Next Round</button> <!-- RENAMED TEXT & HIDDEN -->
-        </div>
-        <div id="totalScore">Total Score: 0</div> <!-- Kept original position for totalScore -->
-
-        <script src="script.js"></script>
-        <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.5.1/dist/confetti.browser.min.js"></script>
-
-        <script>
-            if ('serviceWorker' in navigator) {
-                window.addEventListener('load', () => {
-                    navigator.serviceWorker.register('./sw.js')
-                        .then(registration => {
-                            console.log('Service Worker registered: ', registration);
-                        })
-                        .catch(error => {
-                            console.error('Service Worker registration failed: ', error);
-                        });
-                });
-            }
-        </script>
-        <footer>
-            <p>&copy; 2024 Wavelength Game. All Rights Reserved.</p>
+        <footer class="site-footer">
             <nav>
-                <a href="/">Home</a>
-                <a href="/terms.html">Terms of Service</a>
-                <a href="/privacy.html">Privacy Policy</a>
+                <a href="/terms.html">Terms</a>
+                <a href="/privacy.html">Privacy</a>
                 <a href="/about.html">About</a>
                 <a href="/changelog.html">Change Log</a>
             </nav>
+            <p>&copy; 2024 Wavelength Game</p>
         </footer>
+    </div>
+
+    <!-- How to play -->
+    <dialog id="helpDialog" class="sheet-dialog">
+        <div class="sheet" tabindex="-1" autofocus>
+            <header class="sheet-header">
+                <h2>How to play</h2>
+                <button class="icon-btn" data-close type="button" aria-label="Close"><svg class="i"><use href="#i-x"/></svg></button>
+            </header>
+            <div class="sheet-body">
+                <ol class="steps">
+                    <li><span class="step-n">1</span><div><strong>Pass to the psychic.</strong> One player on the current team is the Psychic. They tap the dial to peek at the hidden target. Everyone else, no looking!</div></li>
+                    <li><span class="step-n">2</span><div><strong>Give a clue.</strong> The card shows two opposites, like <em>Cold ↔ Hot</em>. The Psychic says one word or phrase that sits where the target is. Aiming a bit toward Hot? Try "warm soup."</div></li>
+                    <li><span class="step-n">3</span><div><strong>Hide &amp; guess.</strong> The Psychic closes the dial, and the team talks it over and drags the needle to their guess.</div></li>
+                    <li><span class="step-n">4</span><div><strong>Reveal!</strong> Open the dial to see how close you got. Then the next team takes a turn.</div></li>
+                </ol>
+                <div class="legend">
+                    <div class="legend-item"><span class="swatch band-5"></span><strong>5</strong> Bullseye</div>
+                    <div class="legend-item"><span class="swatch band-3"></span><strong>3</strong> Close</div>
+                    <div class="legend-item"><span class="swatch band-1"></span><strong>1</strong> Near</div>
+                    <div class="legend-item"><span class="swatch band-0"></span><strong>0</strong> Miss</div>
+                </div>
+                <p class="muted small">Tip: open <strong>Deck</strong> to write your own cards, or import a deck a friend shared with you.</p>
+            </div>
+            <footer class="sheet-footer">
+                <button class="btn btn-primary" data-close type="button">Let's play</button>
+            </footer>
+        </div>
+    </dialog>
+
+    <!-- Teams -->
+    <dialog id="teamsDialog" class="sheet-dialog">
+        <div class="sheet" tabindex="-1" autofocus>
+            <header class="sheet-header">
+                <h2>Teams</h2>
+                <button class="icon-btn" data-close type="button" aria-label="Close"><svg class="i"><use href="#i-x"/></svg></button>
+            </header>
+            <div class="sheet-body">
+                <ul class="team-list" id="teamList"></ul>
+                <button class="btn btn-ghost btn-block" id="addTeamBtn" type="button">
+                    <svg class="i"><use href="#i-plus"/></svg> Add team
+                </button>
+            </div>
+            <footer class="sheet-footer">
+                <button class="btn btn-text" id="resetScoresBtn" type="button">Reset scores</button>
+                <button class="btn btn-primary" data-close type="button">Done</button>
+            </footer>
+        </div>
+    </dialog>
+
+    <!-- Deck editor -->
+    <dialog id="deckDialog" class="sheet-dialog sheet-dialog--tall">
+        <div class="sheet" tabindex="-1" autofocus>
+            <header class="sheet-header">
+                <div>
+                    <h2>Card deck</h2>
+                    <p class="sheet-sub" id="deckSummary"></p>
+                </div>
+                <button class="icon-btn" data-close type="button" aria-label="Close"><svg class="i"><use href="#i-x"/></svg></button>
+            </header>
+            <div class="deck-toolbar">
+                <label class="search">
+                    <svg class="i"><use href="#i-search"/></svg>
+                    <input id="deckSearch" type="search" placeholder="Search cards" autocomplete="off" />
+                </label>
+                <div class="deck-toolbar-actions">
+                    <button class="btn btn-sm btn-primary" id="addCardBtn" type="button"><svg class="i"><use href="#i-plus"/></svg> Add card</button>
+                    <button class="btn btn-sm btn-secondary" id="importBtn" type="button"><svg class="i"><use href="#i-upload"/></svg> Import</button>
+                    <button class="btn btn-sm btn-secondary" id="exportBtn" type="button"><svg class="i"><use href="#i-download"/></svg> Export</button>
+                </div>
+            </div>
+            <div class="sheet-body deck-body">
+                <ul class="deck-list" id="deckList"></ul>
+                <div class="deck-empty" id="deckEmpty" hidden></div>
+            </div>
+            <footer class="sheet-footer">
+                <button class="btn btn-text" id="resetDeckBtn" type="button">Restore default deck</button>
+                <button class="btn btn-primary" data-close type="button">Done</button>
+            </footer>
+        </div>
+    </dialog>
+
+    <!-- Import -->
+    <dialog id="importDialog" class="sheet-dialog">
+        <div class="sheet" tabindex="-1" autofocus>
+            <header class="sheet-header">
+                <div>
+                    <h2>Import cards</h2>
+                    <p class="sheet-sub">From an exported deck file, or paste your own list.</p>
+                </div>
+                <button class="icon-btn" data-close type="button" aria-label="Close"><svg class="i"><use href="#i-x"/></svg></button>
+            </header>
+            <div class="sheet-body">
+                <label class="dropzone" id="dropzone">
+                    <input type="file" id="importFile" accept=".json,.txt,.csv,application/json,text/plain,text/csv" hidden />
+                    <svg class="i"><use href="#i-file"/></svg>
+                    <span class="dropzone-title" id="dropzoneTitle">Drop a file here or <u>choose one</u></span>
+                    <span class="dropzone-sub">.json, .csv or .txt</span>
+                </label>
+                <div class="or"><span>or paste cards</span></div>
+                <textarea id="importText" rows="5" spellcheck="false" placeholder="One card per line, like:&#10;Cold | Hot&#10;Worst Pizza Topping | Best Pizza Topping"></textarea>
+                <div class="import-preview" id="importPreview" hidden></div>
+            </div>
+            <footer class="sheet-footer">
+                <button class="btn btn-text btn-danger" id="importReplaceBtn" type="button" disabled>Replace deck</button>
+                <button class="btn btn-primary" id="importAddBtn" type="button" disabled>Add cards</button>
+            </footer>
+        </div>
+    </dialog>
+
+    <!-- Confirm -->
+    <dialog id="confirmDialog" class="sheet-dialog sheet-dialog--small">
+        <form class="sheet" method="dialog">
+            <header class="sheet-header">
+                <h2 id="confirmTitle"></h2>
+            </header>
+            <div class="sheet-body">
+                <p id="confirmMessage" class="muted"></p>
+            </div>
+            <footer class="sheet-footer">
+                <button class="btn btn-secondary" value="cancel" type="submit">Cancel</button>
+                <button class="btn btn-primary" id="confirmOk" value="ok" type="submit">OK</button>
+            </footer>
+        </form>
+    </dialog>
+
+    <div class="toast-region" id="toasts" aria-live="polite"></div>
+
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.5.1/dist/confetti.browser.min.js"></script>
+    <script src="script.js"></script>
+    <script>
+        if ('serviceWorker' in navigator) {
+            const isLocal = /^(localhost|127\.0\.0\.1)$/.test(location.hostname);
+            if (isLocal) {
+                // Don't cache while developing locally, so edits show up on refresh
+                navigator.serviceWorker.getRegistrations().then(regs => regs.forEach(r => r.unregister()));
+                if (window.caches) caches.keys().then(keys => keys.forEach(k => caches.delete(k)));
+            } else {
+                window.addEventListener('load', () => {
+                    navigator.serviceWorker.register('./sw.js').catch(err => {
+                        console.error('Service Worker registration failed: ', err);
+                    });
+                });
+            }
+        }
+    </script>
 </body>
 
 </html>
