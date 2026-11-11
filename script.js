@@ -36,424 +36,544 @@ const gameContainer = document.querySelector('.game-container');
 // Now that all DOM elements are declared, we can parse the JSON and use the buttons.
 const cluesJSONString = `[
     [
-        "Bad Company",
-        "Good Company"
-    ],
-    [
-        "Terrible Movie",
-        "Great Movie"
-    ],
-    [
-        "Forgettable Person",
-        "Memorable Person"
-    ],
-    [
-        "Culturally Insignificant",
-        "Culturally Significant"
-    ],
-    [
-        "Dry Food",
-        "Wet Food"
-    ],
-    [
-        "Easy to Do",
-        "Hard to Do"
-    ],
-    [
-        "Feels Bad",
-        "Feels Good"
-    ],
-    [
-        "Hairless",
-        "Hairy"
-    ],
-    [
-        "Hard to Remember",
-        "Easy to Remember"
-    ],
-    [
         "Cold",
         "Hot"
     ],
     [
-        "Inflexible",
-        "Flexible"
+        "Tiny",
+        "Giant"
     ],
     [
-        "Clean Food",
+        "Slow",
+        "Fast"
+    ],
+    [
+        "Quiet",
+        "Loud"
+    ],
+    [
+        "Soft",
+        "Hard"
+    ],
+    [
+        "Light as a Feather",
+        "Super Heavy"
+    ],
+    [
+        "Smooth",
+        "Bumpy"
+    ],
+    [
+        "Dry",
+        "Soaking Wet"
+    ],
+    [
+        "Short",
+        "Tall"
+    ],
+    [
+        "Dark",
+        "Bright"
+    ],
+    [
+        "Sour",
+        "Sweet"
+    ],
+    [
+        "Stinky",
+        "Smells Amazing"
+    ],
+    [
+        "Squishy",
+        "Crunchy"
+    ],
+    [
+        "Sparkling Clean",
+        "Super Messy"
+    ],
+    [
+        "Sleepy",
+        "Wide Awake"
+    ],
+    [
+        "Down Low",
+        "Up High"
+    ],
+    [
+        "Close By",
+        "Far, Far Away"
+    ],
+    [
+        "Brand New",
+        "Really Old"
+    ],
+    [
+        "Plain",
+        "Colorful"
+    ],
+    [
+        "Round",
+        "Pointy"
+    ],
+    [
+        "Scaly",
+        "Fluffy"
+    ],
+    [
+        "Calm",
+        "Wild"
+    ],
+    [
+        "Sinks",
+        "Floats"
+    ],
+    [
+        "Straight",
+        "Wiggly"
+    ],
+    [
+        "Sticky",
+        "Slippery"
+    ],
+    [
+        "Scary Animal",
+        "Cuddly Animal"
+    ],
+    [
+        "Slow Animal",
+        "Speedy Animal"
+    ],
+    [
+        "Quiet Animal",
+        "Noisy Animal"
+    ],
+    [
+        "Tricky Pet",
+        "Perfect Pet"
+    ],
+    [
+        "Lazy Animal",
+        "Busy Animal"
+    ],
+    [
+        "Silly-Looking Animal",
+        "Cool-Looking Animal"
+    ],
+    [
+        "Animal You'd Never Ride",
+        "Animal You'd Love to Ride"
+    ],
+    [
+        "Sneaky Animal",
+        "Clumsy Animal"
+    ],
+    [
+        "Worst Class Pet",
+        "Best Class Pet"
+    ],
+    [
+        "Boring Zoo Exhibit",
+        "Best Zoo Exhibit"
+    ],
+    [
+        "Yucky Food",
+        "Yummy Food"
+    ],
+    [
+        "Breakfast Food",
+        "Dinner Food"
+    ],
+    [
+        "Tidy Food",
         "Messy Food"
     ],
     [
-        "Proper Utensil Food",
-        "Finger Food"
+        "Little Snack",
+        "Giant Feast"
     ],
     [
-        "Want",
-        "Need"
-    ],
-    [
-        "Weird Thing to Own",
-        "Normal Thing to Own"
-    ],
-    [
-        "Poorly Made",
-        "Well Made"
-    ],
-    [
-        "Quiet Place",
-        "Loud Place"
-    ],
-    [
-        "Common",
-        "Rare"
-    ],
-    [
-        "Bad Influence",
-        "Role Model"
-    ],
-    [
-        "Pointy Animal",
-        "Round Animal"
-    ],
-    [
-        "Hard",
-        "Soft"
-    ],
-    [
-        "Ugly",
-        "Beautiful"
-    ],
-    [
-        "Underpaid Job",
-        "Overpaid Job"
-    ],
-    [
-        "Underrated Skill",
-        "Overrated Skill"
-    ],
-    [
-        "Unsexy Emoji",
-        "Sexy Emoji"
-    ],
-    [
-        "Useless",
-        "Useful"
-    ],
-    [
-        "Villain",
-        "Hero"
-    ],
-    [
-        "Worst Day Ever",
-        "Best Day Ever"
-    ],
-    [
-        "Boring Hobby",
-        "Exciting Hobby"
-    ],
-    [
-        "Useless Superpower",
-        "Awesome Superpower"
-    ],
-    [
-        "Lame Party Trick",
-        "Cool Party Trick"
-    ],
-    [
-        "Terrible First Date Spot",
-        "Perfect First Date Spot"
-    ],
-    [
-        "Awkward Conversation Topic",
-        "Engaging Conversation Topic"
+        "Mild",
+        "Spicy"
     ],
     [
         "Worst Pizza Topping",
         "Best Pizza Topping"
     ],
     [
+        "Worst Ice Cream Flavor",
+        "Best Ice Cream Flavor"
+    ],
+    [
+        "Everyday Food",
+        "Special Treat"
+    ],
+    [
+        "Spoon Food",
+        "Finger Food"
+    ],
+    [
+        "Boring Sandwich",
+        "Amazing Sandwich"
+    ],
+    [
+        "Worst Lunchbox Surprise",
+        "Best Lunchbox Surprise"
+    ],
+    [
+        "Better Cold",
+        "Better Hot"
+    ],
+    [
+        "Weird Food Combo",
+        "Perfect Food Combo"
+    ],
+    [
+        "Worst Road Trip Snack",
+        "Best Road Trip Snack"
+    ],
+    [
+        "Worst School Lunch",
+        "Best School Lunch"
+    ],
+    [
+        "Boring Toy",
+        "Awesome Toy"
+    ],
+    [
+        "Indoor Fun",
+        "Outdoor Fun"
+    ],
+    [
+        "Easy Game",
+        "Tricky Game"
+    ],
+    [
+        "Fun Alone",
+        "Fun With Friends"
+    ],
+    [
+        "Gentle Ride",
+        "Wild Ride"
+    ],
+    [
+        "Terrible Hiding Spot",
+        "Great Hiding Spot"
+    ],
+    [
+        "Boring Playground Thing",
+        "Best Playground Thing"
+    ],
+    [
+        "Easy Sport",
+        "Hard Sport"
+    ],
+    [
+        "Boring Rainy Day Activity",
+        "Best Rainy Day Activity"
+    ],
+    [
+        "Sleepy Birthday Party",
+        "Epic Birthday Party"
+    ],
+    [
+        "Easy to Draw",
+        "Hard to Draw"
+    ],
+    [
+        "Easy to Build",
+        "Hard to Build"
+    ],
+    [
+        "Calm Hobby",
+        "Exciting Hobby"
+    ],
+    [
+        "Quick Game",
+        "Game That Takes Forever"
+    ],
+    [
+        "Boring Car Ride Game",
+        "Fun Car Ride Game"
+    ],
+    [
+        "Wobbly Fort Material",
+        "Sturdy Fort Material"
+    ],
+    [
+        "Worst Costume",
+        "Best Costume"
+    ],
+    [
+        "Boring Video Game",
+        "Can't-Stop-Playing Video Game"
+    ],
+    [
+        "Boring School Subject",
+        "Fascinating School Subject"
+    ],
+    [
+        "Easy Homework",
+        "Hard Homework"
+    ],
+    [
+        "Worst Field Trip",
+        "Best Field Trip"
+    ],
+    [
+        "Silly Homework Excuse",
+        "Believable Homework Excuse"
+    ],
+    [
+        "Useless Fact",
+        "Mind-Blowing Fact"
+    ],
+    [
+        "Easy Word to Spell",
+        "Hard Word to Spell"
+    ],
+    [
+        "Boring Show-and-Tell",
+        "Amazing Show-and-Tell"
+    ],
+    [
+        "Easy to Learn",
+        "Takes Years to Master"
+    ],
+    [
+        "Tough Group Project Partner",
+        "Dream Group Project Partner"
+    ],
+    [
+        "Book You Can't Finish",
+        "Book You Can't Put Down"
+    ],
+    [
+        "Useless Superpower",
+        "Awesome Superpower"
+    ],
+    [
+        "Silly Superhero Name",
+        "Mighty Superhero Name"
+    ],
+    [
+        "Friendly Monster",
+        "Spooky Monster"
+    ],
+    [
+        "Not Magical",
+        "Very Magical"
+    ],
+    [
+        "Real",
+        "Make-Believe"
+    ],
+    [
+        "Useless Robot",
+        "Helpful Robot"
+    ],
+    [
+        "Worst Treasure to Find",
+        "Best Treasure to Find"
+    ],
+    [
+        "Boring Place to Explore",
+        "Amazing Place to Explore"
+    ],
+    [
+        "Terrible Dragon Name",
+        "Perfect Dragon Name"
+    ],
+    [
+        "Silly Wish",
+        "Smart Wish"
+    ],
+    [
+        "Worst Sidekick",
+        "Best Sidekick"
+    ],
+    [
+        "Old-Timey",
+        "Futuristic"
+    ],
+    [
+        "Background Character",
+        "Main Character"
+    ],
+    [
+        "Useless Invention",
+        "World-Changing Invention"
+    ],
+    [
+        "Chore You Dread",
+        "Chore You Don't Mind"
+    ],
+    [
+        "Itchy Clothes",
+        "Comfy Clothes"
+    ],
+    [
         "Annoying Sound",
         "Satisfying Sound"
     ],
     [
-        "Uncomfortable Clothing",
-        "Comfy Clothing"
-    ],
-    [
-        "Worst Smell",
-        "Best Smell"
-    ],
-    [
-        "Boring Class Subject",
-        "Fascinating Class Subject"
-    ],
-    [
-        "Terrible Gift",
+        "Forgettable Gift",
         "Thoughtful Gift"
     ],
     [
-        "Unhealthy Habit",
-        "Healthy Habit"
+        "Morning Thing",
+        "Nighttime Thing"
     ],
     [
-        "Worst Chore",
-        "Most Satisfying Chore"
+        "School Day Thing",
+        "Weekend Thing"
+    ],
+    [
+        "Winter Thing",
+        "Summer Thing"
+    ],
+    [
+        "Nice to Have",
+        "Can't Live Without"
+    ],
+    [
+        "Costs Pennies",
+        "Costs a Fortune"
+    ],
+    [
+        "Fits in Your Pocket",
+        "Needs a Truck"
+    ],
+    [
+        "Worst Weather",
+        "Best Weather"
+    ],
+    [
+        "Boring Bedtime Story",
+        "Great Bedtime Story"
+    ],
+    [
+        "Worst Thing to Step On",
+        "Best Thing to Step On"
+    ],
+    [
+        "Not Scary",
+        "Very Scary"
+    ],
+    [
+        "Hard to Share",
+        "Easy to Share"
+    ],
+    [
+        "Takes a Second",
+        "Takes All Day"
+    ],
+    [
+        "Ordinary",
+        "Fancy"
+    ],
+    [
+        "Easy to Lose",
+        "Impossible to Lose"
+    ],
+    [
+        "Worst Place to Nap",
+        "Best Place to Nap"
+    ],
+    [
+        "Bad Thing to Bring Camping",
+        "Great Thing to Bring Camping"
+    ],
+    [
+        "Bad Thing to Bring to the Beach",
+        "Great Thing to Bring to the Beach"
+    ],
+    [
+        "Easy Job",
+        "Hard Job"
+    ],
+    [
+        "Boring Job",
+        "Dream Job"
+    ],
+    [
+        "Makes You Grumpy",
+        "Makes You Smile"
+    ],
+    [
+        "Not Funny",
+        "Hilarious"
+    ],
+    [
+        "Embarrassing",
+        "Makes You Proud"
+    ],
+    [
+        "Stressful",
+        "Relaxing"
+    ],
+    [
+        "Small Act of Kindness",
+        "Huge Act of Kindness"
+    ],
+    [
+        "Rude",
+        "Polite"
+    ],
+    [
+        "Tough Teammate Habit",
+        "Great Teammate Habit"
+    ],
+    [
+        "Takes a Little Courage",
+        "Takes a Lot of Courage"
+    ],
+    [
+        "Joke That Flops",
+        "Joke Everyone Laughs At"
+    ],
+    [
+        "Underrated",
+        "Overrated"
     ],
     [
         "Forgettable Song",
-        "Catchy Song"
+        "Song Stuck in Your Head"
+    ],
+    [
+        "Movie You'd Sleep Through",
+        "Movie You'd Watch Again"
+    ],
+    [
+        "Out of Style",
+        "Trendy"
     ],
     [
         "Useless App",
         "Must-Have App"
     ],
     [
-        "Terrible Supervillain Name",
-        "Awesome Superhero Name"
+        "Worst Team Name",
+        "Best Team Name"
     ],
     [
-        "Worst Flavor",
-        "Best Flavor"
+        "Worst Band Name",
+        "Best Band Name"
     ],
     [
-        "Boring Museum Exhibit",
-        "Mind-Blowing Museum Exhibit"
+        "Cringey",
+        "Cool"
     ],
     [
-        "Terrible Band Name",
-        "Awesome Band Name"
+        "Hardly Anyone Knows It",
+        "Everyone Knows It"
     ],
     [
-        "Worst Yearbook Quote",
-        "Best Yearbook Quote"
+        "Skill Nobody Notices",
+        "Skill That Wows Everyone"
     ],
     [
-        "Lame Excuse",
-        "Believable Excuse"
-    ],
-    [
-        "Terrible Mascot",
+        "Forgettable Mascot",
         "Lovable Mascot"
-    ],
-    [
-        "Worst Invention",
-        "Life-Changing Invention"
-    ],
-    [
-        "Annoying Commercial",
-        "Memorable Commercial"
-    ],
-    [
-        "Terrible Pickup Line",
-        "Smooth Pickup Line"
-    ],
-    [
-        "Worst Sandwich Filling",
-        "Best Sandwich Filling"
-    ],
-    [
-        "Boring Screensaver",
-        "Hypnotic Screensaver"
-    ],
-    [
-        "Useless Life Hack",
-        "Game-Changing Life Hack"
-    ],
-    [
-        "Terrible Sitcom Premise",
-        "Hilarious Sitcom Premise"
-    ],
-    [
-        "Worst Karaoke Song",
-        "Crowd-Pleasing Karaoke Song"
-    ],
-    [
-        "Annoying Social Media Trend",
-        "Fun Social Media Trend"
-    ],
-    [
-        "Terrible Stage Name",
-        "Unforgettable Stage Name"
-    ],
-    [
-        "Worst Tongue Twister",
-        "Most Challenging Tongue Twister"
-    ],
-    [
-        "Boring Screensaver",
-        "Mesmerizing Screensaver"
-    ],
-    [
-        "Terrible Tattoo",
-        "Meaningful Tattoo"
-    ],
-    [
-        "Worst Bumper Sticker",
-        "Clever Bumper Sticker"
-    ],
-    [
-        "Annoying Catchphrase",
-        "Iconic Catchphrase"
-    ],
-    [
-        "Terrible Team Name",
-        "Intimidating Team Name"
-    ],
-    [
-        "Worst Flavor Combination",
-        "Unexpectedly Delicious Flavor Combination"
-    ],
-    [
-        "Useless College Course",
-        "Life-Changing College Course"
-    ],
-    [
-        "Terrible Podcast Topic",
-        "Binge-Worthy Podcast Topic"
-    ],
-    [
-        "Worst Theme Park Ride",
-        "Thrilling Theme Park Ride"
-    ],
-    [
-        "Annoying Pet Trick",
-        "Impressive Pet Trick"
-    ],
-    [
-        "Terrible Workout",
-        "Effective Workout"
-    ],
-    [
-        "Worst Board Game",
-        "Addictive Board Game"
-    ],
-    [
-        "Annoying Habit",
-        "Endearing Quirk"
-    ],
-    [
-        "Terrible Prank",
-        "Harmless Prank"
-    ],
-    [
-        "Worst Cereal Mascot",
-        "Beloved Cereal Mascot"
-    ],
-    [
-        "Annoying Alarm Sound",
-        "Gentle Wake-Up Alarm"
-    ],
-    [
-        "Terrible Vacation Spot",
-        "Dream Vacation Destination"
-    ],
-    [
-        "Worst Toy",
-        "Must-Have Toy"
-    ],
-    [
-        "Annoying TV Character",
-        "Fan-Favorite TV Character"
-    ],
-    [
-        "Terrible Superpower Side Effect",
-        "Awesome Superpower Perk"
-    ],
-    [
-        "Worst Ice Cream Flavor",
-        "Innovative Ice Cream Flavor"
-    ],
-    [
-        "Annoying Text Abbreviation",
-        "Useful Text Abbreviation"
-    ],
-    [
-        "Terrible Costume Idea",
-        "Creative Costume Idea"
-    ],
-    [
-        "Worst Cooking Mistake",
-        "Game-Changing Cooking Tip"
-    ],
-    [
-        "Annoying Exercise",
-        "Fun Exercise"
-    ],
-    [
-        "Terrible Breakup Method",
-        "Respectful Breakup Method"
-    ],
-    [
-        "Worst Motivational Poster",
-        "Actually Motivating Poster"
-    ],
-    [
-        "Annoying Car Feature",
-        "Useful Car Feature"
-    ],
-    [
-        "Terrible Hiding Spot",
-        "Clever Hiding Spot"
-    ],
-    [
-        "Worst Trend from Your Parents' Era",
-        "Cool Retro Trend"
-    ],
-    [
-        "Annoying Tourist Behavior",
-        "Respectful Tourist Behavior"
-    ],
-    [
-        "Terrible Roommate Habit",
-        "Ideal Roommate Quality"
-    ],
-    [
-        "Worst Reason to Call in Sick",
-        "Legitimate Reason to Call in Sick"
-    ],
-    [
-        "Annoying Phone Notification",
-        "Important Phone Notification"
-    ],
-    [
-        "Terrible Boat Name",
-        "Clever Boat Name"
-    ],
-    [
-        "Worst Reason to Break Up",
-        "Valid Reason to Break Up"
-    ],
-    [
-        "Annoying Gym Behavior",
-        "Proper Gym Etiquette"
-    ],
-    [
-        "Terrible Airline",
-        "Top-Rated Airline"
-    ],
-    [
-        "Worst Bathroom Graffiti",
-        "Profound Bathroom Graffiti"
-    ],
-    [
-        "Annoying Concert Behavior",
-        "Considerate Concert Behavior"
-    ],
-    [
-        "Terrible Hogwarts House",
-        "Best Hogwarts House"
-    ],
-    [
-        "Worst Reason to Get a Pet",
-        "Great Reason to Get a Pet"
-    ],
-    [
-        "Annoying Email Subject Line",
-        "Attention-Grabbing Email Subject Line"
-    ],
-    [
-        "Terrible Wifi Network Name",
-        "Clever Wifi Network Name"
     ]
 ]`;
 
