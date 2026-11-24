@@ -1,0 +1,306 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+    <meta name="theme-color" content="#fbf7f0" />
+    <title>ThisClose · A Pass-and-Play Party Game</title>
+    <meta name="description" content="ThisClose is a free pass-and-play party game for families and friends. One player gives a clue, and the team guesses where it lands between two opposites. Get THIS close for big points!" />
+    <meta name="keywords" content="ThisClose, party game, family game, pass and play, guessing game, opposites, team game, free online game" />
+    <meta property="og:title" content="ThisClose" />
+    <meta property="og:description" content="Give a clue, guess where it lands between two opposites, and see how close you got. A free pass-and-play party game." />
+    <meta property="og:type" content="website" />
+    <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='9' fill='%23ff5a3c'/%3E%3Cpath d='M7 10l6 6-6 6M25 10l-6 6 6 6' fill='none' stroke='%23fff' stroke-width='3.2' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@500;600;700&family=Nunito:wght@400;600;700;800&display=swap" rel="stylesheet" />
+    <!-- ?v= makes old service workers fetch fresh copies; keep in sync with sw.js PRECACHE -->
+    <link rel="stylesheet" href="style.css?v=8" />
+
+    <!-- Google tag (gtag.js) -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-HZ0TQPSV7S"></script>
+    <script>
+        window.dataLayer = window.dataLayer || [];
+        function gtag(){dataLayer.push(arguments);}
+        gtag('js', new Date());
+        // Skip analytics while developing locally
+        if (!/^(localhost|127\.0\.0\.1)$/.test(location.hostname)) {
+            gtag('config', 'G-HZ0TQPSV7S');
+        }
+    </script>
+</head>
+
+<body>
+    <!-- Icon sprite -->
+    <svg width="0" height="0" style="position:absolute" aria-hidden="true">
+        <defs>
+            <symbol id="i-pinch" viewBox="0 0 24 24"><path d="m4 6 6 6-6 6"/><path d="m20 6-6 6 6 6"/></symbol>
+            <symbol id="i-cards" viewBox="0 0 24 24"><rect x="2.5" y="5.5" width="12" height="16" rx="2.2" transform="rotate(-10 8.5 13.5)"/><rect x="9.5" y="2.5" width="12" height="16" rx="2.2" transform="rotate(8 15.5 10.5)"/></symbol>
+            <symbol id="i-users" viewBox="0 0 24 24"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></symbol>
+            <symbol id="i-help" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/><path d="M12 17h.01"/></symbol>
+            <symbol id="i-restart" viewBox="0 0 24 24"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/></symbol>
+            <symbol id="i-x" viewBox="0 0 24 24"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></symbol>
+            <symbol id="i-plus" viewBox="0 0 24 24"><path d="M5 12h14"/><path d="M12 5v14"/></symbol>
+            <symbol id="i-minus" viewBox="0 0 24 24"><path d="M5 12h14"/></symbol>
+            <symbol id="i-trash" viewBox="0 0 24 24"><path d="M3 6h18"/><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"/><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"/></symbol>
+            <symbol id="i-download" viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><path d="m7 10 5 5 5-5"/><path d="M12 15V3"/></symbol>
+            <symbol id="i-upload" viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><path d="m17 8-5-5-5 5"/><path d="M12 3v12"/></symbol>
+            <symbol id="i-search" viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></symbol>
+            <symbol id="i-shuffle" viewBox="0 0 24 24"><path d="M2 18h1.4c1.3 0 2.5-.6 3.3-1.7l6.1-8.6c.7-1.1 2-1.7 3.3-1.7H22"/><path d="m18 2 4 4-4 4"/><path d="M2 6h1.9c1.5 0 2.9.9 3.6 2.2"/><path d="M22 18h-5.9c-1.3 0-2.6-.7-3.3-1.8l-.5-.8"/><path d="m18 14 4 4-4 4"/></symbol>
+            <symbol id="i-eye" viewBox="0 0 24 24"><path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7Z"/><circle cx="12" cy="12" r="3"/></symbol>
+            <symbol id="i-eye-off" viewBox="0 0 24 24"><path d="M9.88 9.88a3 3 0 1 0 4.24 4.24"/><path d="M10.73 5.08A10.43 10.43 0 0 1 12 5c7 0 10 7 10 7a13.16 13.16 0 0 1-1.67 2.68"/><path d="M6.61 6.61A13.53 13.53 0 0 0 2 12s3 7 10 7a9.74 9.74 0 0 0 5.39-1.61"/><path d="M2 2l20 20"/></symbol>
+            <symbol id="i-arrow-right" viewBox="0 0 24 24"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></symbol>
+            <symbol id="i-arrow-left" viewBox="0 0 24 24"><path d="M19 12H5"/><path d="m12 19-7-7 7-7"/></symbol>
+            <symbol id="i-arrows" viewBox="0 0 24 24"><path d="M8 7 3 12l5 5"/><path d="m16 7 5 5-5 5"/><path d="M3 12h18"/></symbol>
+            <symbol id="i-lock" viewBox="0 0 24 24"><rect x="4" y="11" width="16" height="10" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></symbol>
+            <symbol id="i-phone" viewBox="0 0 24 24"><rect x="6" y="2" width="12" height="20" rx="2.5"/><path d="M11 18h2"/></symbol>
+            <symbol id="i-file" viewBox="0 0 24 24"><path d="M14.5 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7.5L14.5 2z"/><path d="M14 2v6h6"/></symbol>
+        </defs>
+    </svg>
+
+    <div class="app">
+        <header class="topbar">
+            <a class="brand" href="/" aria-label="ThisClose home">
+                <span class="brand-mark"><svg class="i"><use href="#i-pinch"/></svg></span>
+                <span class="brand-name">This<b>Close</b></span>
+            </a>
+            <nav class="topbar-actions" aria-label="Game menu">
+                <button class="tb-btn" id="deckBtn" type="button" title="Edit the card deck">
+                    <svg class="i"><use href="#i-cards"/></svg>
+                    <span class="tb-label">Deck</span>
+                    <span class="tb-badge" id="deckBadge">0</span>
+                </button>
+                <button class="tb-btn" id="teamsBtn" type="button" title="Edit teams">
+                    <svg class="i"><use href="#i-users"/></svg>
+                    <span class="tb-label">Teams</span>
+                </button>
+                <button class="tb-btn" id="helpBtn" type="button" title="How to play" aria-label="How to play">
+                    <svg class="i"><use href="#i-help"/></svg>
+                </button>
+                <button class="tb-btn" id="newGameBtn" type="button" title="Start a new game" aria-label="New game">
+                    <svg class="i"><use href="#i-restart"/></svg>
+                </button>
+            </nav>
+        </header>
+
+        <main class="stage">
+            <section class="scoreboard" id="scoreboard" aria-label="Scores"></section>
+
+            <section class="turn" id="turn" aria-live="polite">
+                <div class="turn-eyebrow" id="turnEyebrow"></div>
+                <h1 class="turn-title" id="turnTitle"></h1>
+                <p class="turn-hint" id="turnHint"></p>
+            </section>
+
+            <section class="board" id="board" data-phase="ready">
+                <div class="ends" id="ends" aria-live="polite">
+                    <div class="end end-left">
+                        <svg class="i end-arrow"><use href="#i-arrow-left"/></svg>
+                        <span class="end-text" id="endLeft"></span>
+                    </div>
+                    <div class="end end-right">
+                        <span class="end-text" id="endRight"></span>
+                        <svg class="i end-arrow"><use href="#i-arrow-right"/></svg>
+                    </div>
+                </div>
+
+                <div class="track" id="track" role="slider" tabindex="-1"
+                     aria-label="Your team's guess" aria-valuemin="0" aria-valuemax="100" aria-valuenow="50">
+                    <div class="rail" id="rail">
+                        <div class="rail-bg">
+                            <div class="spot-glow" id="spotGlow"></div>
+                            <div class="ticks" id="ticks"></div>
+                        </div>
+                        <div class="gap" id="gap"></div>
+                        <div class="spot" id="spot">
+                            <div class="spot-pin"></div>
+                            <div class="spot-tag" id="spotTag"></div>
+                        </div>
+                        <div class="marker" id="marker">
+                            <div class="marker-tag" id="markerTag"></div>
+                            <div class="marker-knob"></div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="float-points" id="floatPoints" aria-hidden="true"></div>
+            </section>
+
+            <section class="actions" id="actions"></section>
+        </main>
+
+        <footer class="site-footer">
+            <nav>
+                <a href="/terms.html">Terms</a>
+                <a href="/privacy.html">Privacy</a>
+                <a href="/about.html">About</a>
+                <a href="/changelog.html">Change Log</a>
+            </nav>
+            <p>ThisClose&trade; &copy; 2026 Team Walter Games</p>
+        </footer>
+    </div>
+
+    <!-- Pass-the-phone hand-off -->
+    <dialog id="handoffDialog" class="handoff-dialog" aria-labelledby="handoffTitle">
+        <div class="handoff">
+            <div class="handoff-icon"><svg class="i"><use href="#i-phone"/></svg></div>
+            <div class="handoff-eyebrow" id="handoffEyebrow"></div>
+            <h2 class="handoff-title" id="handoffTitle">Pass the phone to your team</h2>
+            <p class="handoff-sub">The spot is hidden. Clue Giver, no more hints!</p>
+            <button class="btn btn-light btn-lg" id="handoffGo" type="button">We're ready to guess <svg class="i"><use href="#i-arrow-right"/></svg></button>
+        </div>
+    </dialog>
+
+    <!-- How to play -->
+    <dialog id="helpDialog" class="sheet-dialog">
+        <div class="sheet" tabindex="-1" autofocus>
+            <header class="sheet-header">
+                <h2>How to play</h2>
+                <button class="icon-btn" data-close type="button" aria-label="Close"><svg class="i"><use href="#i-x"/></svg></button>
+            </header>
+            <div class="sheet-body">
+                <ol class="steps">
+                    <li><span class="step-n">1</span><div><strong>Pick a Clue Giver.</strong> Hand them the phone. They tap to see the secret spot on the bar. Everyone else, no peeking!</div></li>
+                    <li><span class="step-n">2</span><div><strong>Give a clue.</strong> The bar runs between two opposites, like <em>Cold</em> and <em>Hot</em>. Say one word or phrase that lands on the spot. Is the spot "pretty Hot"? Try "hot chocolate."</div></li>
+                    <li><span class="step-n">3</span><div><strong>Hide &amp; pass.</strong> Hide the spot and pass the phone to your team. They talk it over and drag the marker to their guess.</div></li>
+                    <li><span class="step-n">4</span><div><strong>Reveal!</strong> Lock it in to see how close you got. Then the next team takes a turn.</div></li>
+                </ol>
+                <div class="scoring">
+                    <div class="scoring-title">Closer = more points</div>
+                    <div class="scoring-row">
+                        <div><strong>10</strong><span>spot on</span></div>
+                        <div><strong>8</strong><span>4 away</span></div>
+                        <div><strong>5</strong><span>10 away</span></div>
+                        <div><strong>1</strong><span>18 away</span></div>
+                        <div><strong>0</strong><span>20+ away</span></div>
+                    </div>
+                    <p class="muted small">The bar runs from 0 to 100. Every 2 steps away from the spot costs 1 point.</p>
+                </div>
+                <p class="muted small">Tip: open <strong>Deck</strong> to write your own cards, or import a deck a friend shared with you.</p>
+            </div>
+            <footer class="sheet-footer">
+                <button class="btn btn-primary" data-close type="button">Let's play</button>
+            </footer>
+        </div>
+    </dialog>
+
+    <!-- Teams -->
+    <dialog id="teamsDialog" class="sheet-dialog">
+        <div class="sheet" tabindex="-1" autofocus>
+            <header class="sheet-header">
+                <h2>Teams</h2>
+                <button class="icon-btn" data-close type="button" aria-label="Close"><svg class="i"><use href="#i-x"/></svg></button>
+            </header>
+            <div class="sheet-body">
+                <ul class="team-list" id="teamList"></ul>
+                <button class="btn btn-ghost btn-block" id="addTeamBtn" type="button">
+                    <svg class="i"><use href="#i-plus"/></svg> Add team
+                </button>
+            </div>
+            <footer class="sheet-footer">
+                <button class="btn btn-text" id="resetScoresBtn" type="button">Reset scores</button>
+                <button class="btn btn-primary" data-close type="button">Done</button>
+            </footer>
+        </div>
+    </dialog>
+
+    <!-- Deck editor -->
+    <dialog id="deckDialog" class="sheet-dialog sheet-dialog--tall">
+        <div class="sheet" tabindex="-1" autofocus>
+            <header class="sheet-header">
+                <div>
+                    <h2>Card deck</h2>
+                    <p class="sheet-sub" id="deckSummary"></p>
+                </div>
+                <button class="icon-btn" data-close type="button" aria-label="Close"><svg class="i"><use href="#i-x"/></svg></button>
+            </header>
+            <div class="deck-toolbar">
+                <label class="search">
+                    <svg class="i"><use href="#i-search"/></svg>
+                    <input id="deckSearch" type="search" placeholder="Search cards" autocomplete="off" />
+                </label>
+                <div class="deck-toolbar-actions">
+                    <button class="btn btn-sm btn-primary" id="addCardBtn" type="button"><svg class="i"><use href="#i-plus"/></svg> Add card</button>
+                    <button class="btn btn-sm btn-secondary" id="importBtn" type="button"><svg class="i"><use href="#i-upload"/></svg> Import</button>
+                    <button class="btn btn-sm btn-secondary" id="exportBtn" type="button"><svg class="i"><use href="#i-download"/></svg> Export</button>
+                </div>
+            </div>
+            <div class="sheet-body deck-body">
+                <ul class="deck-list" id="deckList"></ul>
+                <div class="deck-empty" id="deckEmpty" hidden></div>
+            </div>
+            <footer class="sheet-footer">
+                <button class="btn btn-text" id="resetDeckBtn" type="button">Restore default deck</button>
+                <button class="btn btn-primary" data-close type="button">Done</button>
+            </footer>
+        </div>
+    </dialog>
+
+    <!-- Import -->
+    <dialog id="importDialog" class="sheet-dialog">
+        <div class="sheet" tabindex="-1" autofocus>
+            <header class="sheet-header">
+                <div>
+                    <h2>Import cards</h2>
+                    <p class="sheet-sub">From an exported deck file, or paste your own list.</p>
+                </div>
+                <button class="icon-btn" data-close type="button" aria-label="Close"><svg class="i"><use href="#i-x"/></svg></button>
+            </header>
+            <div class="sheet-body">
+                <label class="dropzone" id="dropzone">
+                    <input type="file" id="importFile" accept=".json,.txt,.csv,application/json,text/plain,text/csv" hidden />
+                    <svg class="i"><use href="#i-file"/></svg>
+                    <span class="dropzone-title" id="dropzoneTitle">Drop a file here or <u>choose one</u></span>
+                    <span class="dropzone-sub">.json, .csv or .txt</span>
+                </label>
+                <div class="or"><span>or paste cards</span></div>
+                <textarea id="importText" rows="5" spellcheck="false" placeholder="One card per line, like:&#10;Cold | Hot&#10;Worst Pizza Topping | Best Pizza Topping"></textarea>
+                <div class="import-preview" id="importPreview" hidden></div>
+            </div>
+            <footer class="sheet-footer">
+                <button class="btn btn-text btn-danger" id="importReplaceBtn" type="button" disabled>Replace deck</button>
+                <button class="btn btn-primary" id="importAddBtn" type="button" disabled>Add cards</button>
+            </footer>
+        </div>
+    </dialog>
+
+    <!-- Confirm -->
+    <dialog id="confirmDialog" class="sheet-dialog sheet-dialog--small">
+        <form class="sheet" method="dialog">
+            <header class="sheet-header">
+                <h2 id="confirmTitle"></h2>
+            </header>
+            <div class="sheet-body">
+                <p id="confirmMessage" class="muted"></p>
+            </div>
+            <footer class="sheet-footer">
+                <button class="btn btn-secondary" value="cancel" type="submit">Cancel</button>
+                <button class="btn btn-primary" id="confirmOk" value="ok" type="submit">OK</button>
+            </footer>
+        </form>
+    </dialog>
+
+    <div class="toast-region" id="toasts" aria-live="polite"></div>
+
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.5.1/dist/confetti.browser.min.js"></script>
+    <script src="script.js?v=8"></script>
+    <script>
+        if ('serviceWorker' in navigator) {
+            const isLocal = /^(localhost|127\.0\.0\.1)$/.test(location.hostname);
+            if (isLocal) {
+                // Don't cache while developing locally, so edits show up on refresh
+                navigator.serviceWorker.getRegistrations().then(regs => regs.forEach(r => r.unregister()));
+                if (window.caches) caches.keys().then(keys => keys.forEach(k => caches.delete(k)));
+            } else {
+                window.addEventListener('load', () => {
+                    navigator.serviceWorker.register('./sw.js').catch(err => {
+                        console.error('Service Worker registration failed: ', err);
+                    });
+                });
+            }
+        }
+    </script>
+</body>
+
+</html>
