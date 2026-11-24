@@ -647,7 +647,7 @@
         if (phase === 'ready' && noCards) {
             html = `<button class="btn btn-primary btn-lg" data-act="open-deck">${icon('cards')} Open deck</button>`;
         } else if (phase === 'ready') {
-            html = `<button class="btn btn-primary btn-lg" data-act="start">${icon('eye')} I'm the Clue Giver</button>`;
+            html = ''; // the start button sits on the board itself
         } else if (phase === 'clue') {
             html = `<button class="btn btn-secondary btn-lg" data-act="new-card">${icon('shuffle')} New card</button>
                     <button class="btn btn-primary btn-lg" data-act="hide">${icon('eye-off')} Hide &amp; pass</button>`;
